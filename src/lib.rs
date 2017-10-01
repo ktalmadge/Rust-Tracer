@@ -14,6 +14,9 @@ mod object;
 mod pixel_buffer;
 mod ray;
 
+#[allow(unused_imports)]
+use object::Object;
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -26,7 +29,6 @@ mod tests {
 
         buffer.save_image("img/buff_out_vec.png").unwrap();
     }
-
 
     #[test]
     fn test_camera() {
@@ -49,7 +51,51 @@ mod tests {
         let sphere: object::sphere::Sphere =
             object::sphere::Sphere::new(Vector3::new(0f64, 0f64, 0f64), 1f64);
 
-        let triangle: object::triangle::Triangle =
-            object::triangle::Triangle::new(Vector3::new(0f64, 0f64, 0f64), 1f64);
+        let triangle: object::triangle::Triangle = object::triangle::Triangle::new(
+            Vector3::new(1f64, 0f64, 0f64),
+            Vector3::new(0f64, 2f64, 0f64),
+            Vector3::new(0f64, 0f64, 1f64),
+        );
+    }
+
+    #[test]
+    fn test_sphere_intersection() {
+        let mut sphere: object::sphere::Sphere =
+            object::sphere::Sphere::new(Vector3::new(5f64, 5f64, 5f64), 1f64);
+
+        let ray_hit: ray::Ray = ray::Ray::new(
+            Vector3::new(1f64, 1f64, 1f64),
+            Vector3::new(1f64, 1f64, 1f64),
+        );
+
+        let ray_miss: ray::Ray = ray::Ray::new(
+            Vector3::new(1f64, 1f64, 1f64),
+            Vector3::new(0f64, 0f64, 1f64),
+        );
+
+        assert_eq!(sphere.intersect(ray_hit), true);
+        assert_eq!(sphere.intersect(ray_miss), false);
+    }
+
+    #[test]
+    fn test_triangle_intersection() {
+        let mut triangle: object::triangle::Triangle = object::triangle::Triangle::new(
+            Vector3::new(4f64, 6f64, 4f64),
+            Vector3::new(6f64, 4f64, 4f64),
+            Vector3::new(5f64, 5f64, 6f64),
+        );
+
+        let ray_hit: ray::Ray = ray::Ray::new(
+            Vector3::new(1f64, 1f64, 1f64),
+            Vector3::new(1f64, 1f64, 1f64),
+        );
+
+        let ray_miss: ray::Ray = ray::Ray::new(
+            Vector3::new(1f64, 1f64, 1f64),
+            Vector3::new(0f64, 0f64, 1f64),
+        );
+
+        assert_eq!(triangle.intersect(ray_hit), true);
+        assert_eq!(triangle.intersect(ray_miss), false);
     }
 }

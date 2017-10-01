@@ -1,6 +1,6 @@
 pub mod sphere;
 pub mod triangle;
 
-trait Object {
+pub trait Object {
     fn intersect(&mut self, ray: ::ray::Ray) -> bool;
 }

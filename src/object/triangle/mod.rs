@@ -4,6 +4,7 @@ use self::cgmath::*;
 
 use object::Object;
 
+#[derive(Clone, Copy)]
 pub struct Triangle {
     p1: Vector3<f64>,
     p2: Vector3<f64>,

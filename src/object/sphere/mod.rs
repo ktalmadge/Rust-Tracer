@@ -4,6 +4,7 @@ use self::cgmath::*;
 
 use object::Object;
 
+#[derive(Clone, Copy)]
 pub struct Sphere {
     origin: Vector3<f64>,
     radius: f64,

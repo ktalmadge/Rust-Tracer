@@ -6,10 +6,6 @@ mod view_window;
 
 use camera::Camera;
 use object::Object;
-use object::Shape;
-use object::Shape::*;
-use object::triangle::Triangle;
-use object::sphere::Sphere;
 use pixel_buffer::PixelBuffer;
 use ray::Ray;
 use self::view_window::ViewWindow;
@@ -17,14 +13,14 @@ use self::view_window::ViewWindow;
 pub struct RayTracer {
     width: usize,
     height: usize,
-    objects: Vec<Shape>,
+    objects: Vec<Box<Object>>,
     pixel_buffer: PixelBuffer,
     camera: Camera,
     view_window: ViewWindow,
 }
 
 impl RayTracer {
-    pub fn new(width: usize, height: usize, objects: Vec<Shape>) -> RayTracer {
+    pub fn new(width: usize, height: usize, objects: Vec<Box<Object>>) -> RayTracer {
         let aspect_ratio: f64 = width as f64 / height as f64;
 
         RayTracer {
@@ -50,12 +46,7 @@ impl RayTracer {
                 let mut ray: Ray = self.generate_ray(x, y);
 
                 for obj in self.objects.iter() {
-                    let intersect: bool = match obj {
-                        &Triangle(t) => t.clone().intersect(ray),
-                        &Sphere(s) => s.clone().intersect(ray),
-                    };
-
-                    if intersect {
+                    if obj.intersect(ray) {
                         self.pixel_buffer.set_pixel(x, y, 255, 255, 255, 255);
                     }
                 }

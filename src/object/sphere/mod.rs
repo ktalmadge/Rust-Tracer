@@ -17,7 +17,7 @@ impl Sphere {
 }
 
 impl Object for Sphere {
-    fn intersect(&mut self, ray: ::ray::Ray) -> bool {
+    fn intersect(&self, ray: ::ray::Ray) -> bool {
         let diff: Vector3<f64> = ray.origin - self.origin;
         let b: f64 = 2f64 * diff.dot(ray.direction);
         let c: f64 = diff.dot(diff) - self.radius.powi(2);

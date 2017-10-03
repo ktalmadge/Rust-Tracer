@@ -17,7 +17,6 @@ mod ray_tracer;
 
 #[allow(unused_imports)]
 use object::Object;
-use object::Shape;
 
 #[cfg(test)]
 mod tests {
@@ -42,18 +41,18 @@ mod tests {
 
     #[test]
     fn test_ray_tracer() {
-        let mut triangle: object::Shape = object::Shape::Triangle(object::triangle::Triangle::new(
+        let mut sphere: Box<Object> = Box::new(object::sphere::Sphere::new(
+            Vector3::new(0f64, 0f64, 3f64),
+            1f64,
+        ));
+
+        let mut triangle: Box<Object> = Box::new(object::triangle::Triangle::new(
             Vector3::new(-1f64, -1f64, 3f64),
             Vector3::new(-1f64, 1f64, 3f64),
             Vector3::new(1f64, 1f64, 3f64),
         ));
 
-        let mut sphere: object::Shape = object::Shape::Sphere(object::sphere::Sphere::new(
-            Vector3::new(0f64, 0f64, 3f64),
-            1f64,
-        ));
-
-        let mut objects: Vec<object::Shape> = Vec::new();
+        let mut objects: Vec<Box<Object>> = Vec::new();
         objects.push(triangle);
         objects.push(sphere);
 
@@ -123,34 +122,24 @@ mod tests {
         assert_eq!(triangle.intersect(ray_miss), false);
     }
 
-    fn generate_triangle() -> object::Shape {
-        object::Shape::Triangle(object::triangle::Triangle::new(
+    fn generate_triangle() -> Box<Object> {
+        Box::new(object::triangle::Triangle::new(
             Vector3::new(4f64, 6f64, 4f64),
             Vector3::new(6f64, 4f64, 4f64),
             Vector3::new(5f64, 5f64, 6f64),
         ))
     }
 
-    fn generate_sphere() -> object::Shape {
-        object::Shape::Sphere(object::sphere::Sphere::new(
+    fn generate_sphere() -> Box<Object> {
+        Box::new(object::sphere::Sphere::new(
             Vector3::new(4f64, 6f64, 4f64),
             1f64,
         ))
     }
 
     #[test]
-    fn test_shape_polymorphism() {
-        let mut triangle: object::Shape = generate_triangle();
-        let mut sphere: object::Shape = generate_sphere();
-
-        match triangle {
-            object::Shape::Triangle(t) => assert!(true),
-            _ => assert!(false),
-        }
-
-        match sphere {
-            object::Shape::Sphere(s) => assert!(true),
-            _ => assert!(false),
-        }
+    fn test_shapes() {
+        let mut triangle: Box<Object> = generate_triangle();
+        let mut sphere: Box<Object> = generate_sphere();
     }
 }

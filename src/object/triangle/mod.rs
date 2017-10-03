@@ -18,7 +18,7 @@ impl Triangle {
 }
 
 impl Object for Triangle {
-    fn intersect(&self, ray: ::ray::Ray) -> bool {
+    fn intersect(&self, ray: ::ray::Ray) -> Option<Vector3<f64>> {
         let eps: f64 = 0.0001;
 
         let v1v2: Vector3<f64> = self.p2 - self.p1;
@@ -28,7 +28,7 @@ impl Object for Triangle {
         let a: f64 = v1v2.dot(h);
 
         if a.abs() < eps {
-            return false;
+            return None;
         }
 
         let f: f64 = 1f64 / a;
@@ -37,22 +37,27 @@ impl Object for Triangle {
         let u: f64 = f * s.dot(h);
 
         if u < 0f64 || u > 1f64 {
-            return false;
+            return None;
         }
 
         let q: Vector3<f64> = s.cross(v1v2);
         let v: f64 = f * ray.direction.dot(q);
 
         if v < 0f64 || u + v > 1f64 {
-            return false;
+            return None;
         }
 
+        // t: Distance along ray to intersection
         let t: f64 = f * v1v3.dot(q);
 
         if t > eps {
-            return true;
+            return Some(Vector3::new(
+                ray.origin.x + ray.direction.x * t,
+                ray.origin.y + ray.direction.y * t,
+                ray.origin.z + ray.direction.z * t,
+            ));
         }
 
-        false
+        None
     }
 }

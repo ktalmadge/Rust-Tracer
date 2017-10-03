@@ -33,7 +33,7 @@ impl ViewWindow {
         }
     }
 
-    pub fn at(&mut self, x: usize, y: usize) -> Vector3<f64> {
+    pub fn at(&self, x: usize, y: usize) -> Vector3<f64> {
         self.origin +
             Vector3::new(
                 self.start_x + self.pixel_size * x as f64,

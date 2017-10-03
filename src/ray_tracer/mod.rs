@@ -46,8 +46,9 @@ impl RayTracer {
                 let mut ray: Ray = self.generate_ray(x, y);
 
                 for obj in self.objects.iter() {
-                    if obj.intersect(ray) {
-                        self.pixel_buffer.set_pixel(x, y, 255, 255, 255, 255);
+                    match obj.intersect(ray) {
+                        Some(intersection) => self.pixel_buffer.set_pixel(x, y, 255, 255, 255, 255),
+                        _ => (),
                     }
                 }
             }

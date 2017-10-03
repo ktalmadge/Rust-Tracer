@@ -96,8 +96,8 @@ mod tests {
             Vector3::new(0f64, 0f64, 1f64),
         );
 
-        assert_eq!(sphere.intersect(ray_hit), true);
-        assert_eq!(sphere.intersect(ray_miss), false);
+        assert!(sphere.intersect(ray_hit).is_some());
+        assert!(sphere.intersect(ray_miss).is_none());
     }
 
     #[test]
@@ -118,8 +118,8 @@ mod tests {
             Vector3::new(0f64, 0f64, 1f64),
         );
 
-        assert_eq!(triangle.intersect(ray_hit), true);
-        assert_eq!(triangle.intersect(ray_miss), false);
+        assert!(triangle.intersect(ray_hit).is_some());
+        assert!(triangle.intersect(ray_miss).is_none());
     }
 
     fn generate_triangle() -> Box<Object> {

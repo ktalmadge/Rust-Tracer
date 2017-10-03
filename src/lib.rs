@@ -58,7 +58,7 @@ mod tests {
 
         let mut ray_tracer = ray_tracer::RayTracer::new(WIDTH, HEIGHT, objects);
 
-        ray_tracer.trace();
+        ray_tracer.draw();
     }
 
     #[test]

@@ -16,4 +16,8 @@ impl Ray {
             direction: (destination - origin).normalize(),
         }
     }
+
+    pub fn distance(&self, other: Vector3<f64>) -> f64 {
+        (other - self.origin).magnitude() as f64
+    }
 }

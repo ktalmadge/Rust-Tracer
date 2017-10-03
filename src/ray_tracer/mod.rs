@@ -1,6 +1,9 @@
+extern crate image;
 extern crate cgmath;
 
 use self::cgmath::*;
+
+use self::image::{Pixel, Rgba};
 
 mod view_window;
 
@@ -36,20 +39,28 @@ impl RayTracer {
         }
     }
 
-    pub fn generate_ray(&mut self, x: usize, y: usize) -> Ray {
-        Ray::new(self.camera.origin, self.view_window.at(x, y))
+    // must find closest intersection
+
+
+    pub fn trace(&mut self, ray: Ray) -> Option<Rgba<u8>> {
+        for obj in self.objects.iter() {
+            match obj.intersect(ray) {
+                Some(intersection) => return Some(Rgba::from_channels(255, 0, 0, 255)),
+                _ => (),
+            }
+        }
+
+        None
     }
 
-    pub fn trace(&mut self) {
+    pub fn draw(&mut self) {
         for x in 0..self.width {
             for y in 0..self.height {
-                let mut ray: Ray = self.generate_ray(x, y);
+                let mut ray: Ray = Ray::new(self.camera.origin, self.view_window.at(x, y));
 
-                for obj in self.objects.iter() {
-                    match obj.intersect(ray) {
-                        Some(intersection) => self.pixel_buffer.set_pixel(x, y, 255, 255, 255, 255),
-                        _ => (),
-                    }
+                match self.trace(ray) {
+                    Some(color) => self.pixel_buffer.set_pixel_rgba(x, y, color),
+                    _ => {}
                 }
             }
         }

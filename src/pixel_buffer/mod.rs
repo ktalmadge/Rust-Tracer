@@ -31,6 +31,10 @@ impl PixelBuffer {
         );
     }
 
+    pub fn set_pixel_rgba(&mut self, x: usize, y: usize, color: Rgba<u8>) {
+        self.image_buffer.put_pixel(x as u32, y as u32, color);
+    }
+
     pub fn clear_image_buffer(&mut self) {
         for x in 0..self.width {
             for y in 0..self.height {

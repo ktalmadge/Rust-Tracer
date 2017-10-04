@@ -2,18 +2,23 @@
 #![allow(unused_variables, unused_mut)]
 
 extern crate cgmath;
+extern crate image;
 
 #[allow(unused_imports)]
 use self::cgmath::Vector3;
+
+#[allow(unused_imports)]
+use self::image::{Pixel, Rgba};
 
 const WIDTH: usize = 640;
 const HEIGHT: usize = 400;
 
 mod camera;
+mod light;
 mod object;
 mod pixel_buffer;
 mod ray;
-mod ray_tracer;
+mod scene;
 
 #[allow(unused_imports)]
 use object::Object;
@@ -23,62 +28,34 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_pixel_buffer() {
-        let mut buffer: pixel_buffer::PixelBuffer = pixel_buffer::PixelBuffer::new(WIDTH, HEIGHT);
-
-        buffer.set_pixel(200, 100, 255, 0, 0, 255);
-
-        buffer.save_image("img/buff_out_vec.png").unwrap();
-    }
-
-    #[test]
-    fn test_camera() {
-        let camera = camera::Camera::new(
-            Vector3::new(0f64, 0f64, 0f64),
-            Vector3::new(0f64, 1f64, 0f64),
-        );
-    }
-
-    #[test]
-    fn test_ray_tracer() {
+    fn draw_scene() {
         let mut sphere: Box<Object> = Box::new(object::sphere::Sphere::new(
             Vector3::new(0f64, 0f64, 3.6f64),
-            1f64,
+            2f64,
         ));
 
         let mut triangle: Box<Object> = Box::new(object::triangle::Triangle::new(
-            Vector3::new(-1f64, -1f64, 3f64),
+            Vector3::new(-2.5f64, -1f64, 3f64),
+            Vector3::new(-2.5f64, 1f64, 3f64),
             Vector3::new(-1f64, 1f64, 3f64),
-            Vector3::new(1f64, 1f64, 3f64),
         ));
 
         let mut objects: Vec<Box<Object>> = Vec::new();
         objects.push(triangle);
         objects.push(sphere);
 
-        let mut ray_tracer = ray_tracer::RayTracer::new(WIDTH, HEIGHT, objects);
+        let mut light1: Box<light::Light> = Box::new(light::Light::new(
+            Vector3::new(-4f64, 0f64, 0f64),
+            1f64,
+            Rgba::from_channels(255, 255, 255, 255),
+        ));
 
-        ray_tracer.draw();
-    }
+        let mut lights: Vec<Box<light::Light>> = Vec::new();
+        lights.push(light1);
 
-    #[test]
-    fn test_ray() {
-        let ray: ray::Ray = ray::Ray::new(
-            Vector3::new(0f64, 0f64, 0f64),
-            Vector3::new(1f64, 1f64, 1f64),
-        );
-    }
+        let mut scene: scene::Scene = scene::Scene::new(WIDTH, HEIGHT, lights, objects, 0.05f64);
 
-    #[test]
-    fn test_objects() {
-        let sphere: object::sphere::Sphere =
-            object::sphere::Sphere::new(Vector3::new(0f64, 0f64, 0f64), 1f64);
-
-        let triangle: object::triangle::Triangle = object::triangle::Triangle::new(
-            Vector3::new(1f64, 0f64, 0f64),
-            Vector3::new(0f64, 2f64, 0f64),
-            Vector3::new(0f64, 0f64, 1f64),
-        );
+        scene.draw();
     }
 
     #[test]
@@ -120,26 +97,5 @@ mod tests {
 
         assert!(triangle.intersect(&ray_hit).is_some());
         assert!(triangle.intersect(&ray_miss).is_none());
-    }
-
-    fn generate_triangle() -> Box<Object> {
-        Box::new(object::triangle::Triangle::new(
-            Vector3::new(4f64, 6f64, 4f64),
-            Vector3::new(6f64, 4f64, 4f64),
-            Vector3::new(5f64, 5f64, 6f64),
-        ))
-    }
-
-    fn generate_sphere() -> Box<Object> {
-        Box::new(object::sphere::Sphere::new(
-            Vector3::new(4f64, 6f64, 4f64),
-            1f64,
-        ))
-    }
-
-    #[test]
-    fn test_shapes() {
-        let mut triangle: Box<Object> = generate_triangle();
-        let mut sphere: Box<Object> = generate_sphere();
     }
 }

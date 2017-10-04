@@ -3,8 +3,8 @@ extern crate cgmath;
 use self::cgmath::*;
 
 pub struct ViewWindow {
-    pixel_width: usize,
-    pixel_height: usize,
+    pub pixel_width: usize,
+    pub pixel_height: usize,
     view_width: f64,
     view_height: f64,
     origin: Vector3<f64>,

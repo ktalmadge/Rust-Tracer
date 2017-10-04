@@ -5,6 +5,8 @@ use self::cgmath::*;
 
 use self::image::{Pixel, Rgba};
 
+use std::f64;
+
 mod view_window;
 
 use camera::Camera;
@@ -20,6 +22,12 @@ pub struct RayTracer {
     pixel_buffer: PixelBuffer,
     camera: Camera,
     view_window: ViewWindow,
+}
+
+struct RayHit<'a> {
+    object: &'a Box<Object>,
+    intersection: Vector3<f64>,
+    distance: f64,
 }
 
 impl RayTracer {
@@ -40,17 +48,33 @@ impl RayTracer {
     }
 
     // must find closest intersection
+    fn closest_intersection(&mut self, ray: &Ray) -> Option<RayHit> {
+        let mut result: Option<RayHit> = None;
+        let mut shortest_distance: f64 = f64::MAX;
 
-
-    pub fn trace(&mut self, ray: Ray) -> Option<Rgba<u8>> {
-        for obj in self.objects.iter() {
-            match obj.intersect(ray) {
-                Some(intersection) => return Some(Rgba::from_channels(255, 0, 0, 255)),
-                _ => (),
+        for object in self.objects.iter() {
+            if let Some(intersection) = object.intersect(ray) {
+                let distance: f64 = (intersection - ray.origin).magnitude();
+                if shortest_distance > distance {
+                    shortest_distance = distance;
+                    result = Some(RayHit {
+                        object: &object,
+                        intersection,
+                        distance,
+                    });
+                }
             }
         }
 
-        None
+        result
+    }
+
+    fn trace(&mut self, ray: &Ray) -> Option<Rgba<u8>> {
+        match self.closest_intersection(ray) {
+            // Todo: something interesting when we get a ray hit
+            Some(ray_hit) => Some(ray_hit.object.color()),
+            None => None,
+        }
     }
 
     pub fn draw(&mut self) {
@@ -58,9 +82,8 @@ impl RayTracer {
             for y in 0..self.height {
                 let mut ray: Ray = Ray::new(self.camera.origin, self.view_window.at(x, y));
 
-                match self.trace(ray) {
-                    Some(color) => self.pixel_buffer.set_pixel_rgba(x, y, color),
-                    _ => {}
+                if let Some(color) = self.trace(&ray) {
+                    self.pixel_buffer.set_pixel_rgba(x, y, color);
                 }
             }
         }

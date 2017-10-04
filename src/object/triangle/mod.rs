@@ -18,7 +18,7 @@ impl Triangle {
 }
 
 impl Object for Triangle {
-    fn intersect(&self, ray: ::ray::Ray) -> Option<Vector3<f64>> {
+    fn intersect(&self, ray: &::ray::Ray) -> Option<Vector3<f64>> {
         let eps: f64 = 0.0001;
 
         let v1v2: Vector3<f64> = self.p2 - self.p1;

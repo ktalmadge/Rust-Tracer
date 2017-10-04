@@ -42,7 +42,7 @@ mod tests {
     #[test]
     fn test_ray_tracer() {
         let mut sphere: Box<Object> = Box::new(object::sphere::Sphere::new(
-            Vector3::new(0f64, 0f64, 3f64),
+            Vector3::new(0f64, 0f64, 3.6f64),
             1f64,
         ));
 
@@ -96,8 +96,8 @@ mod tests {
             Vector3::new(0f64, 0f64, 1f64),
         );
 
-        assert!(sphere.intersect(ray_hit).is_some());
-        assert!(sphere.intersect(ray_miss).is_none());
+        assert!(sphere.intersect(&ray_hit).is_some());
+        assert!(sphere.intersect(&ray_miss).is_none());
     }
 
     #[test]
@@ -118,8 +118,8 @@ mod tests {
             Vector3::new(0f64, 0f64, 1f64),
         );
 
-        assert!(triangle.intersect(ray_hit).is_some());
-        assert!(triangle.intersect(ray_miss).is_none());
+        assert!(triangle.intersect(&ray_hit).is_some());
+        assert!(triangle.intersect(&ray_miss).is_none());
     }
 
     fn generate_triangle() -> Box<Object> {

@@ -3,14 +3,13 @@ extern crate cgmath;
 
 use self::cgmath::*;
 
-use self::image::{Pixel, Rgba};
-
 use std::f64;
 
 mod view_window;
 
 use light::Light;
 use camera::Camera;
+use color::Color;
 use object::Object;
 use pixel_buffer::PixelBuffer;
 use ray::Ray;
@@ -87,57 +86,24 @@ impl Scene {
         result
     }
 
-    fn min_u8(&self, n1: u8, n2: u8) -> u8 {
-        if n1 < n2 { n1 } else { n2 }
-    }
+    fn light(&self, ray: &Ray, ray_hit: &RayHit) -> Color {
+        let obj_color: Color = Color::new(255f64, 255f64, 255f64);
 
-    fn mul_color(&self, color: Rgba<u8>, value: f64) -> Rgba<u8> {
-        Rgba(
-            [
-                (color.data[0] as f64 * value) as u8,
-                (color.data[1] as f64 * value) as u8,
-                (color.data[2] as f64 * value) as u8,
-                color.data[3],
-            ],
-        )
-    }
-
-    fn add_color(&self, color: Rgba<u8>, other: Rgba<u8>) -> Rgba<u8> {
-        Rgba(
-            [
-                self.min_u8(color.data[0] + other.data[0], 255),
-                self.min_u8(color.data[1] + other.data[0], 255),
-                self.min_u8(color.data[2] + other.data[0], 255),
-                255u8,
-            ],
-        )
-    }
-
-    fn light(&self, ray: &Ray, ray_hit: &RayHit) -> Rgba<u8> {
-        let obj_color: Rgba<u8> = Rgba::from_channels(255, 255, 255, 255);
-
-        let mut result: Rgba<u8> =
-            self.mul_color(obj_color, self.scene_characteristics.ambient_coefficient);
+        let mut result: Color = obj_color * self.scene_characteristics.ambient_coefficient;
 
         for light in self.scene_contents.lights.iter() {
             let from_light: Ray = Ray::new(light.origin, ray_hit.intersection);
             let shade: f64 = 1f64 - ray.direction.dot(from_light.direction);
             if shade > 0f64 {
-                result =
-                    self.add_color(
-                        self.mul_color(
-                            obj_color,
-                            self.scene_characteristics.diffuse_coefficient * shade,
-                        ),
-                        self.mul_color(obj_color, self.scene_characteristics.ambient_coefficient),
-                    );
+                result = obj_color * self.scene_characteristics.diffuse_coefficient * shade +
+                    obj_color * self.scene_characteristics.ambient_coefficient;
             }
         }
 
         result
     }
 
-    fn trace(&mut self, ray: &Ray) -> Option<Rgba<u8>> {
+    fn trace(&mut self, ray: &Ray) -> Option<Color> {
         match self.closest_intersection(ray) {
             Some(ray_hit) => Some(self.light(ray, &ray_hit)),
             None => None,
@@ -150,7 +116,7 @@ impl Scene {
                 let mut ray: Ray = Ray::new(self.camera.origin, self.view_window.at(x, y));
 
                 if let Some(color) = self.trace(&ray) {
-                    self.pixel_buffer.set_pixel_rgba(x, y, color);
+                    self.pixel_buffer.set_pixel(x, y, color);
                 }
             }
         }

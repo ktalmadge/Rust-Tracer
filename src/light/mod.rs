@@ -2,16 +2,17 @@ extern crate cgmath;
 extern crate image;
 
 use self::cgmath::*;
-use self::image::Rgba;
+
+use color::Color;
 
 pub struct Light {
     pub origin: Vector3<f64>,
     pub luminosity: f64,
-    pub color: Rgba<u8>,
+    pub color: Color,
 }
 
 impl Light {
-    pub fn new(origin: Vector3<f64>, luminosity: f64, color: Rgba<u8>) -> Light {
+    pub fn new(origin: Vector3<f64>, luminosity: f64, color: Color) -> Light {
         Light {
             origin,
             luminosity,

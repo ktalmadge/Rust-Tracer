@@ -4,52 +4,61 @@
 extern crate cgmath;
 extern crate image;
 
-#[allow(unused_imports)]
-use self::cgmath::Vector3;
-
-#[allow(unused_imports)]
-use self::image::{Pixel, Rgba};
-
-const WIDTH: usize = 640;
-const HEIGHT: usize = 400;
-
 mod camera;
 mod color;
 mod light;
 mod object;
 mod pixel_buffer;
 mod ray;
+mod reader;
 mod scene;
 
-#[allow(unused_imports)]
-use object::Object;
+const WIDTH: usize = 400;
+const HEIGHT: usize = 400;
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    use object::Object;
+    use super::cgmath::Vector3;
+    use super::image::Rgba;
+
     #[test]
     fn draw_scene() {
         /*  Set up objects */
-        let mut sphere: Box<Object> = Box::new(object::sphere::Sphere::new(
-            Vector3::new(0f64, 0f64, 3.6f64),
-            2f64,
+        let mut sphere1: Box<Object> = Box::new(object::sphere::Sphere::new(
+            Vector3::new(2f64, -1f64, 3.6f64),
+            1.5f64,
         ));
 
-        let mut triangle: Box<Object> = Box::new(object::triangle::Triangle::new(
-            Vector3::new(-2.5f64, -1f64, 3f64),
-            Vector3::new(-2.5f64, 1f64, 3f64),
-            Vector3::new(-1f64, 1f64, 3f64),
+        let mut sphere2: Box<Object> = Box::new(object::sphere::Sphere::new(
+            Vector3::new(0f64, 0f64, 3f64),
+            1.0f64,
+        ));
+
+        let mut triangle1: Box<Object> = Box::new(object::triangle::Triangle::new(
+            Vector3::new(-10f64, -10f64, 9f64),
+            Vector3::new(-10f64, 10f64, 9f64),
+            Vector3::new(10f64, 10f64, 9f64),
+        ));
+
+        let mut triangle2: Box<Object> = Box::new(object::triangle::Triangle::new(
+            Vector3::new(-10f64, -10f64, 9f64),
+            Vector3::new(10f64, -10f64, 9f64),
+            Vector3::new(10f64, 10f64, 9f64),
         ));
 
         let mut objects: Vec<Box<Object>> = Vec::new();
-        objects.push(triangle);
-        objects.push(sphere);
+        objects.push(triangle1);
+        objects.push(triangle2);
+        objects.push(sphere1);
+        objects.push(sphere2);
 
 
         /* Set up lights */
         let mut light1: Box<light::Light> = Box::new(light::Light::new(
-            Vector3::new(-4f64, 0f64, 0f64),
+            Vector3::new(4f64, 10f64, 0f64),
             1f64,
             color::Color::new(255f64, 255f64, 255f64),
         ));
@@ -59,8 +68,23 @@ mod tests {
 
 
         /* Initiate and draw scene */
-        let mut scene: scene::Scene = scene::Scene::new(WIDTH, HEIGHT, lights, objects, 0.05f64);
+        let mut r: reader::Reader = reader::Reader::new();
+        assert!(r.read_file("./test/cube.obj").is_ok());
+
+        let mut scene: scene::Scene = scene::Scene::new(WIDTH, HEIGHT, lights, r.objects, 0.05f64);
         scene.draw();
+    }
+
+    #[test]
+    fn read_file() {
+        let mut r: reader::Reader = reader::Reader::new();
+
+        assert!(r.read_file("./test/cube.obj").is_ok());
+        assert!(
+            reader::Reader::new()
+                .read_file("./test/missing_file.obj")
+                .is_err()
+        );
     }
 
     #[test]

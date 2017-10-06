@@ -5,7 +5,7 @@ use self::cgmath::*;
 use object::Object;
 use std::f64;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Sphere {
     origin: Vector3<f64>,
     radius: f64,

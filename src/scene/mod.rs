@@ -87,7 +87,7 @@ impl Scene {
     }
 
     fn light(&self, ray: &Ray, ray_hit: &RayHit) -> Color {
-        let obj_color: Color = Color::new(255f64, 255f64, 255f64);
+        let obj_color: Color = Color::new(200f64, 100f64, 100f64);
 
         let mut result: Color = obj_color * self.scene_characteristics.ambient_coefficient;
 
@@ -97,6 +97,8 @@ impl Scene {
             if shade > 0f64 {
                 result = obj_color * self.scene_characteristics.diffuse_coefficient * shade +
                     obj_color * self.scene_characteristics.ambient_coefficient;
+            } else {
+                result = obj_color * self.scene_characteristics.ambient_coefficient;
             }
         }
 

@@ -13,8 +13,8 @@ mod ray;
 mod reader;
 mod scene;
 
-const WIDTH: usize = 400;
-const HEIGHT: usize = 400;
+const WIDTH: usize = 300;
+const HEIGHT: usize = 300;
 
 #[cfg(test)]
 mod tests {
@@ -28,8 +28,8 @@ mod tests {
     fn draw_scene() {
         /*  Set up objects */
         let mut sphere1: Box<Object> = Box::new(object::sphere::Sphere::new(
-            Vector3::new(2f64, -1f64, 3.6f64),
-            1.5f64,
+            Vector3::new(2f64, 0f64, 0f64),
+            1f64,
         ));
 
         let mut sphere2: Box<Object> = Box::new(object::sphere::Sphere::new(
@@ -49,16 +49,15 @@ mod tests {
             Vector3::new(10f64, 10f64, 9f64),
         ));
 
-        let mut objects: Vec<Box<Object>> = Vec::new();
-        objects.push(triangle1);
-        objects.push(triangle2);
-        objects.push(sphere1);
-        objects.push(sphere2);
+        // Read in an object
+        let mut r: reader::Reader = reader::Reader::new();
+        assert!(r.read_file("./test/icosahedron.obj").is_ok());
 
+        r.objects.push(sphere1);
 
         /* Set up lights */
         let mut light1: Box<light::Light> = Box::new(light::Light::new(
-            Vector3::new(4f64, 10f64, 0f64),
+            Vector3::new(10f64, 10f64, 10f64),
             1f64,
             color::Color::new(255f64, 255f64, 255f64),
         ));
@@ -66,12 +65,8 @@ mod tests {
         let mut lights: Vec<Box<light::Light>> = Vec::new();
         lights.push(light1);
 
-
         /* Initiate and draw scene */
-        let mut r: reader::Reader = reader::Reader::new();
-        assert!(r.read_file("./test/cube.obj").is_ok());
-
-        let mut scene: scene::Scene = scene::Scene::new(WIDTH, HEIGHT, lights, r.objects, 0.05f64);
+        let mut scene: scene::Scene = scene::Scene::new(WIDTH, HEIGHT, lights, r.objects, 0.4f64);
         scene.draw();
     }
 

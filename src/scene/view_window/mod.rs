@@ -28,7 +28,7 @@ impl ViewWindow {
             view_height,
             origin,
             start_x: origin.x - view_width / 2f64,
-            start_y: origin.y - view_height / 2f64,
+            start_y: origin.y + view_height / 2f64, // Start from top of y
             pixel_size: view_width / pixel_width as f64,
         }
     }
@@ -37,7 +37,7 @@ impl ViewWindow {
         self.origin +
             Vector3::new(
                 self.start_x + self.pixel_size * x as f64,
-                self.start_y + self.pixel_size * y as f64,
+                self.start_y - self.pixel_size * y as f64,
                 0f64,
             )
     }

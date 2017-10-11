@@ -18,6 +18,10 @@ impl Sphere {
 }
 
 impl Object for Sphere {
+    fn normal(&self, intersection: Vector3<f64>) -> Vector3<f64> {
+        (intersection - self.origin).normalize()
+    }
+
     fn intersect(&self, ray: &::ray::Ray) -> Option<Vector3<f64>> {
         let diff: Vector3<f64> = ray.origin - self.origin;
         let b: f64 = 2f64 * diff.dot(ray.direction);

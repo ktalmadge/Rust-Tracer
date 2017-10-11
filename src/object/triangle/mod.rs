@@ -9,15 +9,25 @@ pub struct Triangle {
     p1: Vector3<f64>,
     p2: Vector3<f64>,
     p3: Vector3<f64>,
+    pub normal: Vector3<f64>,
 }
 
 impl Triangle {
     pub fn new(p1: Vector3<f64>, p2: Vector3<f64>, p3: Vector3<f64>) -> Triangle {
-        Triangle { p1, p2, p3 }
+        Triangle {
+            p1,
+            p2,
+            p3,
+            normal: (p1 - p2).cross(p1 - p3).normalize(),
+        }
     }
 }
 
 impl Object for Triangle {
+    fn normal(&self, intersection: Vector3<f64>) -> Vector3<f64> {
+        self.normal
+    }
+
     fn intersect(&self, ray: &::ray::Ray) -> Option<Vector3<f64>> {
         let eps: f64 = 0.0001;
 

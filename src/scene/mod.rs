@@ -44,15 +44,15 @@ impl Scene {
         width: usize,
         height: usize,
         lights: Vec<Box<Light>>,
+        camera: Camera,
         objects: Vec<Box<Object>>,
+        viewport_width: f64,
+        viewport_distance: f64,
         ambient_coefficient: f64,
     ) -> Scene {
         let aspect_ratio: f64 = width as f64 / height as f64;
-
-        let camera_position: Vector3<f64> = Vector3::new(0f64, 0f64, 10f64);
-        let camera_target: Vector3<f64> = Vector3::new(0f64, 0f64, 0f64);
-        let view_window_position: Vector3<f64> = camera_position +
-            (camera_target - camera_position).normalize() * 1f64;
+        let view_window_position: Vector3<f64> = camera.origin +
+            (camera.target - camera.origin).normalize() * viewport_distance;
 
         Scene {
             scene_contents: SceneContents { lights, objects },
@@ -60,9 +60,9 @@ impl Scene {
                 ambient_coefficient,
                 diffuse_coefficient: 1f64 - ambient_coefficient,
             },
-            camera: Camera::new(camera_position, camera_target),
+            camera,
             pixel_buffer: PixelBuffer::new(width, height),
-            view_window: ViewWindow::new(width, height, 1f64, view_window_position),
+            view_window: ViewWindow::new(width, height, viewport_width, view_window_position),
         }
     }
 
@@ -76,6 +76,10 @@ impl Scene {
                 let distance: f64 = (intersection - ray.origin).magnitude();
                 if shortest_distance > distance {
                     shortest_distance = distance;
+
+                    // Offset a bit towards the camera to eliminate self-intersection
+                    let intersection = intersection +
+                        (self.camera.origin - intersection).normalize() * 0.00001f64;
                     result = Some(RayHit {
                         object: &object,
                         intersection,

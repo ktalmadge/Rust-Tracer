@@ -4,6 +4,9 @@
 extern crate cgmath;
 extern crate image;
 
+#[macro_use]
+extern crate serde_derive;
+
 mod camera;
 mod color;
 mod light;

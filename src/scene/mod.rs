@@ -6,7 +6,9 @@ use self::cgmath::*;
 use std::f64;
 
 mod view_window;
+mod configuration;
 
+use self::configuration::Configuration;
 use light::Light;
 use camera::Camera;
 use color::Color;
@@ -14,6 +16,7 @@ use object::Object;
 use pixel_buffer::PixelBuffer;
 use ray::Ray;
 use self::view_window::ViewWindow;
+
 
 pub struct Scene {
     camera: Camera,
@@ -40,29 +43,40 @@ struct RayHit<'a> {
 }
 
 impl Scene {
-    pub fn new(
-        width: usize,
-        height: usize,
-        lights: Vec<Box<Light>>,
-        camera: Camera,
-        objects: Vec<Box<Object>>,
-        viewport_width: f64,
-        viewport_distance: f64,
-        ambient_coefficient: f64,
-    ) -> Scene {
-        let aspect_ratio: f64 = width as f64 / height as f64;
+    pub fn new(configuration_filename: String) -> Scene {
+        let mut configuration: Configuration =
+            Configuration::read_configuration(configuration_filename);
+
+        /* Set up lights */
+        let mut lights: Vec<Box<Light>> = Vec::new();
+        for light_definition in configuration.lights.iter() {
+            lights.push(Box::new(light_definition.as_light()));
+        }
+
+        /*  Set up objects */
+        let mut objects: Vec<Box<Object>> = Vec::new();
+        for object_definition in configuration.objects.iter() {
+            objects.append(&mut (object_definition.read_objects()));
+        }
+
+        let camera: Camera = configuration.camera();
         let view_window_position: Vector3<f64> = camera.origin +
-            (camera.target - camera.origin).normalize() * viewport_distance;
+            (camera.target - camera.origin).normalize() * configuration.viewport_distance;
 
         Scene {
             scene_contents: SceneContents { lights, objects },
             scene_characteristics: SceneCharacteristics {
-                ambient_coefficient,
-                diffuse_coefficient: 1f64 - ambient_coefficient,
+                ambient_coefficient: configuration.ambient_coefficient,
+                diffuse_coefficient: 1f64 - configuration.ambient_coefficient,
             },
             camera,
-            pixel_buffer: PixelBuffer::new(width, height),
-            view_window: ViewWindow::new(width, height, viewport_width, view_window_position),
+            pixel_buffer: PixelBuffer::new(configuration.width, configuration.height),
+            view_window: ViewWindow::new(
+                configuration.width,
+                configuration.height,
+                configuration.viewport_width,
+                view_window_position,
+            ),
         }
     }
 

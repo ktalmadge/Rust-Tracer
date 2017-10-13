@@ -16,7 +16,7 @@ pub struct LightDefinition {
 impl LightDefinition {
     pub fn as_light(&self) -> Light {
         Light::new(
-            ::Configuration::parse_vector(&self.position),
+            super::Configuration::parse_vector(&self.position),
             self.luminosity,
             self.parsed_color(),
         )

@@ -18,6 +18,8 @@ use camera::Camera;
 
 #[derive(Serialize, Deserialize)]
 pub struct Configuration {
+    pub width: usize,
+    pub height: usize,
     pub camera_position: Vec<f64>,
     pub camera_target: Vec<f64>,
     pub viewport_distance: f64,
@@ -36,7 +38,7 @@ impl Configuration {
         )
     }
 
-    pub fn read_configuration(filename: &str) -> Configuration {
+    pub fn read_configuration(filename: String) -> Configuration {
         let mut file = File::open(filename).unwrap();
         let mut contents = String::new();
         file.read_to_string(&mut contents).unwrap();

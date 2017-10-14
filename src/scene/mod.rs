@@ -17,7 +17,6 @@ use pixel_buffer::PixelBuffer;
 use ray::Ray;
 use self::view_window::ViewWindow;
 
-
 pub struct Scene {
     camera: Camera,
     scene_contents: SceneContents,
@@ -113,9 +112,11 @@ impl Scene {
 
         for light in self.scene_contents.lights.iter() {
             let to_light: Ray = Ray::new(ray_hit.intersection, light.origin);
-            let shade: f64 = to_light.direction.dot(ray_hit.object.normal(
+            let mut normal: Vector3<f64> = ray_hit.object.normal(
                 ray_hit.intersection,
-            ));
+                self.camera.orientation_vector(),
+            );
+            let shade: f64 = to_light.direction.dot(normal);
             if shade > 0f64 {
                 result = obj_color * self.scene_characteristics.diffuse_coefficient * shade +
                     obj_color * self.scene_characteristics.ambient_coefficient;

@@ -18,7 +18,7 @@ impl Sphere {
 }
 
 impl Object for Sphere {
-    fn normal(&self, intersection: Vector3<f64>) -> Vector3<f64> {
+    fn normal(&self, intersection: Vector3<f64>, incoming_vector: Vector3<f64>) -> Vector3<f64> {
         (intersection - self.origin).normalize()
     }
 

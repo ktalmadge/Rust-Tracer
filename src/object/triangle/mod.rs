@@ -24,12 +24,16 @@ impl Triangle {
 }
 
 impl Object for Triangle {
-    fn normal(&self, intersection: Vector3<f64>) -> Vector3<f64> {
-        self.normal
+    fn normal(&self, intersection: Vector3<f64>, incoming_vector: Vector3<f64>) -> Vector3<f64> {
+        if incoming_vector.dot(self.normal) > 0f64 {
+            -self.normal
+        } else {
+            self.normal
+        }
     }
 
     fn intersect(&self, ray: &::ray::Ray) -> Option<Vector3<f64>> {
-        let eps: f64 = 0.0001;
+        let eps: f64 = 0.00000000001;
 
         let v1v2: Vector3<f64> = self.p2 - self.p1;
         let v1v3: Vector3<f64> = self.p3 - self.p1;

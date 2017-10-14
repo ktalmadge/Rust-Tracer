@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "cargo-clippy", allow(borrowed_box))]
+
 extern crate image;
 extern crate cgmath;
 
@@ -48,13 +50,13 @@ impl Scene {
 
         /* Set up lights */
         let mut lights: Vec<Box<Light>> = Vec::new();
-        for light_definition in configuration.lights.iter() {
+        for light_definition in &configuration.lights {
             lights.push(Box::new(light_definition.as_light()));
         }
 
         /*  Set up objects */
         let mut objects: Vec<Box<Object>> = Vec::new();
-        for object_definition in configuration.objects.iter() {
+        for object_definition in &configuration.objects {
             objects.append(&mut (object_definition.read_objects()));
         }
 
@@ -84,7 +86,7 @@ impl Scene {
         let mut result: Option<RayHit> = None;
         let mut shortest_distance: f64 = f64::MAX;
 
-        for object in self.scene_contents.objects.iter() {
+        for object in &self.scene_contents.objects {
             if let Some(intersection) = object.intersect(ray) {
                 let distance: f64 = (intersection - ray.origin).magnitude();
                 if shortest_distance > distance {
@@ -92,9 +94,9 @@ impl Scene {
 
                     // Offset a bit towards the camera to eliminate self-intersection
                     let intersection = intersection +
-                        (self.camera.origin - intersection).normalize() * 0.00001f64;
+                        (self.camera.origin - intersection).normalize() * 0.000_01f64;
                     result = Some(RayHit {
-                        object: &object,
+                        object,
                         intersection,
                         distance,
                     });
@@ -110,7 +112,7 @@ impl Scene {
 
         let mut result: Color = obj_color * self.scene_characteristics.ambient_coefficient;
 
-        for light in self.scene_contents.lights.iter() {
+        for light in &self.scene_contents.lights {
             let to_light: Ray = Ray::new(ray_hit.intersection, light.origin);
             let mut normal: Vector3<f64> = ray_hit.object.normal(
                 ray_hit.intersection,

@@ -21,9 +21,9 @@ impl ObjectDefinition {
 
     fn parsed_color(&self) -> Color {
         Color::new(
-            *(self.color.get(0).unwrap()) as f64,
-            *(self.color.get(1).unwrap()) as f64,
-            *(self.color.get(2).unwrap()) as f64,
+            f64::from(self.color[0]),
+            f64::from(self.color[1]),
+            f64::from(self.color[2]),
         )
     }
 }

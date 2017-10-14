@@ -65,28 +65,29 @@ impl Reader {
         match statement {
             "v" => {
                 self.vertices.push(Vector3::new(
-                    parse_float(args.get(0).unwrap())?,
-                    parse_float(args.get(1).unwrap())?,
-                    parse_float(args.get(2).unwrap())?,
+                    parse_float(args[0])?,
+                    parse_float(args[1])?,
+                    parse_float(args[2])?,
                 ))
             }
             "vn" => {
                 self.normals.push(Vector3::new(
-                    parse_float(args.get(0).unwrap())?,
-                    parse_float(args.get(1).unwrap())?,
-                    parse_float(args.get(2).unwrap())?,
+                    parse_float(args[0])?,
+                    parse_float(args[1])?,
+                    parse_float(args[2])?,
                 ))
             }
             "f" => {
-                let v1: usize = parse_face_indices(args.get(0).unwrap())?;
-                let v2: usize = parse_face_indices(args.get(1).unwrap())?;
-                let v3: usize = parse_face_indices(args.get(2).unwrap())?;
+                // TODO: If there are more than 3 vertices, make triangles out of them
+                let v1: usize = parse_face_indices(args[0])?;
+                let v2: usize = parse_face_indices(args[1])?;
+                let v3: usize = parse_face_indices(args[2])?;
 
                 self.objects.push(
                     Box::new(::object::triangle::Triangle::new(
-                        self.vertices.get(v1).unwrap().clone(),
-                        self.vertices.get(v2).unwrap().clone(),
-                        self.vertices.get(v3).unwrap().clone(),
+                        self.vertices[v1],
+                        self.vertices[v2],
+                        self.vertices[v3],
                     )),
                 )
             }

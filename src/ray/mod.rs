@@ -18,6 +18,6 @@ impl Ray {
     }
 
     pub fn distance(&self, other: Vector3<f64>) -> f64 {
-        (other - self.origin).magnitude() as f64
+        f64::from((other - self.origin).magnitude())
     }
 }

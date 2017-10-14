@@ -33,7 +33,7 @@ impl Object for Triangle {
     }
 
     fn intersect(&self, ray: &::ray::Ray) -> Option<Vector3<f64>> {
-        let eps: f64 = 0.00000000001;
+        let eps: f64 = 0.000_000_000_01;
 
         let v1v2: Vector3<f64> = self.p2 - self.p1;
         let v1v3: Vector3<f64> = self.p3 - self.p1;

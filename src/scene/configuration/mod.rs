@@ -30,11 +30,11 @@ pub struct Configuration {
 }
 
 impl Configuration {
-    fn parse_vector(vector: &Vec<f64>) -> Vector3<f64> {
+    fn parse_vector(vector: &[f64]) -> Vector3<f64> {
         Vector3::new(
-            *(vector.get(0).unwrap()) as f64,
-            *(vector.get(1).unwrap()) as f64,
-            *(vector.get(2).unwrap()) as f64,
+            f64::from(vector[0]),
+            f64::from(vector[1]),
+            f64::from(vector[2]),
         )
     }
 

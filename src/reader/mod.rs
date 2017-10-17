@@ -1,3 +1,5 @@
+#![cfg_attr(feature = "cargo-clippy", allow(needless_range_loop))]
+
 extern crate cgmath;
 
 use self::cgmath::*;
@@ -78,18 +80,16 @@ impl Reader {
                 ))
             }
             "f" => {
-                // TODO: If there are more than 3 vertices, make triangles out of them
-                let v1: usize = parse_face_indices(args[0])?;
-                let v2: usize = parse_face_indices(args[1])?;
-                let v3: usize = parse_face_indices(args[2])?;
-
-                self.objects.push(
-                    Box::new(::object::triangle::Triangle::new(
-                        self.vertices[v1],
-                        self.vertices[v2],
-                        self.vertices[v3],
-                    )),
-                )
+                // There may be more than 3 vertices in a face - make triangles out of them.
+                for i in 0..args.len() - 2 {
+                    self.objects.push(
+                        Box::new(::object::triangle::Triangle::new(
+                            self.vertices[parse_face_indices(args[i])?],
+                            self.vertices[parse_face_indices(args[i + 1])?],
+                            self.vertices[parse_face_indices(args[i + 2])?],
+                        )),
+                    )
+                }
             }
             _ => (),
         }

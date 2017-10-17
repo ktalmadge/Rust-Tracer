@@ -18,7 +18,6 @@ mod scene;
 use scene::Scene;
 
 fn main() {
-
     let mut scene: Scene = Scene::new("./configuration.json".to_string());
     scene.draw();
 }

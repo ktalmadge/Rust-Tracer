@@ -18,6 +18,7 @@ use object::Object;
 use pixel_buffer::PixelBuffer;
 use ray::Ray;
 use self::view_window::ViewWindow;
+use object::sphere::Sphere;
 
 pub struct Scene {
     camera: Camera,
@@ -59,6 +60,9 @@ impl Scene {
         for object_definition in &configuration.objects {
             objects.append(&mut (object_definition.read_objects()));
         }
+
+        let mut sphere = Box::new(Sphere::new(Vector3::new(1.25f64, 0f64, 0f64), 0.5f64));
+        objects.push(sphere);
 
         let camera: Camera = configuration.camera();
         let view_window_position: Vector3<f64> = camera.origin +

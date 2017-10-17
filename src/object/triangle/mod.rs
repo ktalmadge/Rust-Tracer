@@ -18,7 +18,7 @@ impl Triangle {
             p1,
             p2,
             p3,
-            normal: (p1 - p2).cross(p1 - p3).normalize(),
+            normal: (p2 - p1).cross(p3 - p1).normalize(),
         }
     }
 }

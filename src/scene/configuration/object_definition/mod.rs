@@ -13,10 +13,10 @@ pub struct ObjectDefinition {
 }
 
 impl ObjectDefinition {
-    pub fn read_objects(&self) -> Vec<Box<::object::Object>> {
+    pub fn read_shapes(&self) -> Vec<::object::Shape> {
         let mut r: Reader = Reader::new();
         r.read_file(&(self.filename), self.parsed_color()).unwrap();
-        r.objects
+        r.shapes
     }
 
     fn parsed_color(&self) -> Color {

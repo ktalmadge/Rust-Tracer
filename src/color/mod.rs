@@ -4,7 +4,7 @@ use self::image::{Pixel, Rgba};
 
 use std::ops;
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Color {
     pub r: f64,
     pub g: f64,

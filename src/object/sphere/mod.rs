@@ -6,7 +6,7 @@ use color::Color;
 use object::Object;
 use std::f64;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Sphere {
     origin: Vector3<f64>,
     radius: f64,

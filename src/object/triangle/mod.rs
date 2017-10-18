@@ -5,7 +5,7 @@ use self::cgmath::*;
 use color::Color;
 use object::Object;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Triangle {
     p1: Vector3<f64>,
     p2: Vector3<f64>,

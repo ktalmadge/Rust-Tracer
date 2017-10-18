@@ -23,10 +23,9 @@ const HEIGHT: usize = 300;
 mod tests {
     use super::*;
 
-    use object::Object;
     use super::cgmath::Vector3;
-    use super::image::Rgba;
 
+    #[test]
     fn test_ray() {
         let straight_ray: ray::Ray = ray::Ray::new(
             Vector3::new(0f64, 0f64, 0f64),

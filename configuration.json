@@ -7,7 +7,7 @@
   "viewport_width": 1.0,
   "lights": [
     {
-      "position": [0, 10.0, 20.0],
+      "position": [0, 100.0, 50.0],
       "luminosity": 1.0,
       "color": [255, 255, 255]
     }
@@ -15,7 +15,7 @@
   "objects": [
     {
       "filename": "./test/icosahedron.obj",
-      "color": [100, 0, 0]
+      "color": [255, 255, 255]
     },
     {
       "filename": "./test/small_sphere.obj",

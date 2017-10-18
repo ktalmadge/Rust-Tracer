@@ -13,7 +13,7 @@ use color::Color;
 pub struct Reader {
     vertices: Vec<Vector3<f64>>,
     normals: Vec<Vector3<f64>>,
-    pub objects: Vec<Box<::object::Object>>,
+    pub shapes: Vec<::object::Shape>,
 }
 
 enum FaceIndex {
@@ -61,7 +61,7 @@ impl Reader {
         Reader {
             vertices: Vec::new(),
             normals: Vec::new(),
-            objects: Vec::new(),
+            shapes: Vec::new(),
         }
     }
 
@@ -89,14 +89,14 @@ impl Reader {
             "f" => {
                 // There may be more than 3 vertices in a face - make triangles out of them.
                 for i in 0..args.len() - 2 {
-                    self.objects.push(
-                        Box::new(::object::triangle::Triangle::new(
+                    self.shapes.push(::object::Shape::Triangle(
+                        ::object::triangle::Triangle::new(
                             self.vertices[parse_face_indices(args[i])?],
                             self.vertices[parse_face_indices(args[i + 1])?],
                             self.vertices[parse_face_indices(args[i + 2])?],
                             color,
-                        )),
-                    )
+                        ),
+                    ))
                 }
             }
             "sphere" => {
@@ -106,11 +106,13 @@ impl Reader {
                     parse_float(args[2])?,
                 );
 
-                self.objects.push(Box::new(::object::sphere::Sphere::new(
-                    sphere_origin,
-                    parse_float(args[3])?,
-                    color,
-                )));
+                self.shapes.push(::object::Shape::Sphere(
+                    ::object::sphere::Sphere::new(
+                        sphere_origin,
+                        parse_float(args[3])?,
+                        color,
+                    ),
+                ));
             }
             _ => (),
         }
@@ -144,10 +146,7 @@ impl Reader {
     }
 
     pub fn read_file(&mut self, filename: &str, color: Color) -> Result<(), io::Error> {
-        let triangles: Vec<Box<::object::Object>> = Vec::new();
-
         let file_contents = BufReader::new(File::open(filename)?);
-
         self.parse(file_contents, color)
     }
 }

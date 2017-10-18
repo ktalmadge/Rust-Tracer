@@ -61,9 +61,6 @@ impl Scene {
             objects.append(&mut (object_definition.read_objects()));
         }
 
-        let mut sphere = Box::new(Sphere::new(Vector3::new(1.25f64, 0f64, 0f64), 0.5f64));
-        objects.push(sphere);
-
         let camera: Camera = configuration.camera();
         let view_window_position: Vector3<f64> = camera.origin +
             (camera.target - camera.origin).normalize() * configuration.viewport_distance;
@@ -111,13 +108,27 @@ impl Scene {
         result
     }
 
+    fn shadow(&self, ray: &Ray, ray_hit: &RayHit) -> bool {
+        match self.closest_intersection(ray) {
+            Some(shadow_hit) => true,
+            None => false,
+        }
+    }
+
     fn light(&self, ray: &Ray, ray_hit: &RayHit) -> Color {
-        let obj_color: Color = Color::new(200f64, 100f64, 100f64);
+        let obj_color: Color = ray_hit.object.color();
 
         let mut result: Color = obj_color * self.scene_characteristics.ambient_coefficient;
 
         for light in &self.scene_contents.lights {
             let to_light: Ray = Ray::new(ray_hit.intersection, light.origin);
+
+            /*
+            if self.shadow(&to_light, ray_hit) {
+                continue;
+            }
+            */
+
             let mut normal: Vector3<f64> = ray_hit.object.normal(
                 ray_hit.intersection,
                 self.camera.orientation_vector(),
@@ -126,8 +137,6 @@ impl Scene {
             if shade > 0f64 {
                 result = obj_color * self.scene_characteristics.diffuse_coefficient * shade +
                     obj_color * self.scene_characteristics.ambient_coefficient;
-            } else {
-                result = obj_color * self.scene_characteristics.ambient_coefficient;
             }
         }
 

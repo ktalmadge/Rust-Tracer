@@ -15,7 +15,7 @@ pub struct ObjectDefinition {
 impl ObjectDefinition {
     pub fn read_objects(&self) -> Vec<Box<::object::Object>> {
         let mut r: Reader = Reader::new();
-        r.read_file(&(self.filename)).unwrap();
+        r.read_file(&(self.filename), self.parsed_color()).unwrap();
         r.objects
     }
 

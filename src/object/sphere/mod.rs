@@ -2,6 +2,7 @@ extern crate cgmath;
 
 use self::cgmath::*;
 
+use color::Color;
 use object::Object;
 use std::f64;
 
@@ -9,15 +10,24 @@ use std::f64;
 pub struct Sphere {
     origin: Vector3<f64>,
     radius: f64,
+    pub color: Color,
 }
 
 impl Sphere {
-    pub fn new(origin: Vector3<f64>, radius: f64) -> Sphere {
-        Sphere { origin, radius }
+    pub fn new(origin: Vector3<f64>, radius: f64, color: Color) -> Sphere {
+        Sphere {
+            origin,
+            radius,
+            color,
+        }
     }
 }
 
 impl Object for Sphere {
+    fn color(&self) -> Color {
+        self.color
+    }
+
     fn normal(&self, intersection: Vector3<f64>, incoming_vector: Vector3<f64>) -> Vector3<f64> {
         (intersection - self.origin).normalize()
     }

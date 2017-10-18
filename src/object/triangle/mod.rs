@@ -2,6 +2,7 @@ extern crate cgmath;
 
 use self::cgmath::*;
 
+use color::Color;
 use object::Object;
 
 #[derive(Clone, Copy, Debug)]
@@ -10,20 +11,26 @@ pub struct Triangle {
     p2: Vector3<f64>,
     p3: Vector3<f64>,
     pub normal: Vector3<f64>,
+    pub color: Color,
 }
 
 impl Triangle {
-    pub fn new(p1: Vector3<f64>, p2: Vector3<f64>, p3: Vector3<f64>) -> Triangle {
+    pub fn new(p1: Vector3<f64>, p2: Vector3<f64>, p3: Vector3<f64>, color: Color) -> Triangle {
         Triangle {
             p1,
             p2,
             p3,
             normal: (p2 - p1).cross(p3 - p1).normalize(),
+            color,
         }
     }
 }
 
 impl Object for Triangle {
+    fn color(&self) -> Color {
+        self.color
+    }
+
     fn normal(&self, intersection: Vector3<f64>, incoming_vector: Vector3<f64>) -> Vector3<f64> {
         if incoming_vector.dot(self.normal) > 0f64 {
             -self.normal

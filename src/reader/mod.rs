@@ -8,6 +8,8 @@ use std::io::{self, BufReader, ErrorKind};
 use std::io::prelude::*;
 use std::fs::File;
 
+use color::Color;
+
 pub struct Reader {
     vertices: Vec<Vector3<f64>>,
     normals: Vec<Vector3<f64>>,
@@ -63,7 +65,12 @@ impl Reader {
         }
     }
 
-    fn eval(&mut self, statement: &str, args: Vec<&str>) -> Result<(), ::std::io::Error> {
+    fn eval(
+        &mut self,
+        statement: &str,
+        args: Vec<&str>,
+        color: Color,
+    ) -> Result<(), ::std::io::Error> {
         match statement {
             "v" => {
                 self.vertices.push(Vector3::new(
@@ -87,9 +94,23 @@ impl Reader {
                             self.vertices[parse_face_indices(args[i])?],
                             self.vertices[parse_face_indices(args[i + 1])?],
                             self.vertices[parse_face_indices(args[i + 2])?],
+                            color,
                         )),
                     )
                 }
+            }
+            "sphere" => {
+                let sphere_origin: Vector3<f64> = Vector3::new(
+                    parse_float(args[0])?,
+                    parse_float(args[1])?,
+                    parse_float(args[2])?,
+                );
+
+                self.objects.push(Box::new(::object::sphere::Sphere::new(
+                    sphere_origin,
+                    parse_float(args[3])?,
+                    color,
+                )));
             }
             _ => (),
         }
@@ -97,7 +118,11 @@ impl Reader {
         Ok(())
     }
 
-    fn parse(&mut self, file_contents: BufReader<File>) -> Result<(), ::std::io::Error> {
+    fn parse(
+        &mut self,
+        file_contents: BufReader<File>,
+        color: Color,
+    ) -> Result<(), ::std::io::Error> {
         // This is a buffer of the "arguments" for each line, it uses raw pointers
         // in order to allow it to be re-used across iterations.
         for line in file_contents.lines() {
@@ -111,18 +136,18 @@ impl Reader {
                     args.push(t);
                 }
 
-                self.eval(statement, args)?
+                self.eval(statement, args, color)?
             }
         }
 
         Ok(())
     }
 
-    pub fn read_file(&mut self, filename: &str) -> Result<(), io::Error> {
+    pub fn read_file(&mut self, filename: &str, color: Color) -> Result<(), io::Error> {
         let triangles: Vec<Box<::object::Object>> = Vec::new();
 
         let file_contents = BufReader::new(File::open(filename)?);
 
-        self.parse(file_contents)
+        self.parse(file_contents, color)
     }
 }

@@ -25,6 +25,7 @@ pub struct Configuration {
     pub viewport_distance: f64,
     pub viewport_width: f64,
     pub ambient_coefficient: f64,
+    pub specular_coefficient: f64,
     pub objects: Vec<ObjectDefinition>,
     pub lights: Vec<LightDefinition>,
 }

@@ -18,7 +18,6 @@ use object::Object;
 use pixel_buffer::PixelBuffer;
 use ray::Ray;
 use self::view_window::ViewWindow;
-use object::sphere::Sphere;
 
 pub struct Scene {
     camera: Camera,
@@ -36,6 +35,7 @@ struct SceneContents {
 struct SceneCharacteristics {
     ambient_coefficient: f64,
     diffuse_coefficient: f64,
+    specular_coefficient: f64,
 }
 
 struct RayHit<'a> {
@@ -70,6 +70,7 @@ impl Scene {
             scene_characteristics: SceneCharacteristics {
                 ambient_coefficient: configuration.ambient_coefficient,
                 diffuse_coefficient: 1f64 - configuration.ambient_coefficient,
+                specular_coefficient: configuration.specular_coefficient,
             },
             camera,
             pixel_buffer: PixelBuffer::new(configuration.width, configuration.height),
@@ -93,9 +94,6 @@ impl Scene {
                 if shortest_distance > distance {
                     shortest_distance = distance;
 
-                    // Offset a bit towards the camera to eliminate self-intersection
-                    let intersection = intersection +
-                        (self.camera.origin - intersection).normalize() * 0.000_01f64;
                     result = Some(RayHit {
                         object,
                         intersection,
@@ -108,13 +106,6 @@ impl Scene {
         result
     }
 
-    fn shadow(&self, ray: &Ray, ray_hit: &RayHit) -> bool {
-        match self.closest_intersection(ray) {
-            Some(shadow_hit) => true,
-            None => false,
-        }
-    }
-
     fn light(&self, ray: &Ray, ray_hit: &RayHit) -> Color {
         let obj_color: Color = ray_hit.object.color();
 
@@ -123,19 +114,18 @@ impl Scene {
         for light in &self.scene_contents.lights {
             let to_light: Ray = Ray::new(ray_hit.intersection, light.origin);
 
-            /*
-            if self.shadow(&to_light, ray_hit) {
-                continue;
-            }
-            */
-
             let mut normal: Vector3<f64> = ray_hit.object.normal(
                 ray_hit.intersection,
                 self.camera.orientation_vector(),
             );
+
             let shade: f64 = to_light.direction.dot(normal);
+
             if shade > 0f64 {
-                result = obj_color * self.scene_characteristics.diffuse_coefficient * shade +
+                result = Color::new(100f64, 100f64, 100f64) *
+                    f64::max(0f64, to_light.direction.dot(ray.reflection(normal)))
+                        .powf(self.scene_characteristics.specular_coefficient) +
+                    obj_color * self.scene_characteristics.diffuse_coefficient * shade +
                     obj_color * self.scene_characteristics.ambient_coefficient;
             }
         }

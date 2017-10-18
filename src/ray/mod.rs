@@ -20,4 +20,8 @@ impl Ray {
     pub fn distance(&self, other: Vector3<f64>) -> f64 {
         f64::from((other - self.origin).magnitude())
     }
+
+    pub fn reflection(&self, normal: Vector3<f64>) -> Vector3<f64> {
+        (-2f64 * self.direction.dot(normal) * normal + self.direction).normalize()
+    }
 }

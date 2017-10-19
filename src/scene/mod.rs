@@ -35,12 +35,14 @@ struct SceneContents {
 struct SceneCharacteristics {
     ambient_coefficient: f64,
     diffuse_coefficient: f64,
-    specular_coefficient: f64,
+    specular_exponent: f64,
+    max_reflections: u8,
 }
 
 struct RayHit<'a> {
     shape: &'a Shape,
     intersection: Vector3<f64>,
+    normal: Vector3<f64>,
     distance: f64,
 }
 
@@ -71,7 +73,8 @@ impl Scene {
             scene_characteristics: SceneCharacteristics {
                 ambient_coefficient: configuration.ambient_coefficient,
                 diffuse_coefficient: 1f64 - configuration.ambient_coefficient,
-                specular_coefficient: configuration.specular_coefficient,
+                specular_exponent: configuration.specular_exponent,
+                max_reflections: configuration.max_reflections,
             },
             camera,
             pixel_buffer: PixelBuffer::new(configuration.width, configuration.height),
@@ -85,7 +88,12 @@ impl Scene {
     }
 
     // must find closest intersection
-    fn closest_intersection(&self, ray: &Ray, this_object: Option<Shape>) -> Option<RayHit> {
+    fn intersection(
+        &self,
+        ray: &Ray,
+        this_object: Option<Shape>,
+        closest_intersection: bool,
+    ) -> Option<RayHit> {
         let mut result: Option<RayHit> = None;
         let mut shortest_distance: f64 = f64::MAX;
 
@@ -104,8 +112,13 @@ impl Scene {
                     result = Some(RayHit {
                         shape,
                         intersection,
+                        normal: shape.normal(intersection, ray.direction),
                         distance,
                     });
+                }
+
+                if !closest_intersection {
+                    return result;
                 }
             }
         }
@@ -114,7 +127,7 @@ impl Scene {
     }
 
     fn shadow(&self, ray_hit: &RayHit, to_light: &Ray) -> bool {
-        if let Some(shadow_hit) = self.closest_intersection(to_light, Some(*ray_hit.shape)) {
+        if let Some(shadow_hit) = self.intersection(to_light, Some(*ray_hit.shape), false) {
             true
         } else {
             false
@@ -122,40 +135,49 @@ impl Scene {
     }
 
     fn light(&self, ray: &Ray, ray_hit: &RayHit) -> Color {
-        let shape_color: Color = ray_hit.shape.color();
+        let shape_color: Color = ray_hit.shape.material().color;
 
         let mut result: Color = shape_color * self.scene_characteristics.ambient_coefficient;
 
         for light in &self.scene_contents.lights {
-            let mut to_light: Ray = Ray::new(ray_hit.intersection, light.origin);
-            to_light.origin += to_light.direction * 0.00001;
+            let to_light: Ray = Ray::from_points(ray_hit.intersection, light.origin);
 
             if self.shadow(ray_hit, &to_light) {
                 continue;
             }
 
-            let mut normal: Vector3<f64> = ray_hit.shape.normal(
-                ray_hit.intersection,
-                self.camera.orientation_vector(),
-            );
-
-            let shade: f64 = to_light.direction.dot(normal);
+            let shade: f64 = to_light.direction.dot(ray_hit.normal);
 
             if shade > 0f64 {
-                result = Color::new(100f64, 100f64, 100f64) *
-                    f64::max(0f64, to_light.direction.dot(ray.reflection(normal)))
-                        .powf(self.scene_characteristics.specular_coefficient) +
-                    shape_color * self.scene_characteristics.diffuse_coefficient * shade +
-                    shape_color * self.scene_characteristics.ambient_coefficient;
+                result += Color::new(100f64, 100f64, 100f64) *
+                    f64::max(0f64, to_light.direction.dot(ray.reflection(ray_hit.normal)))
+                        .powf(self.scene_characteristics.specular_exponent) +
+                    shape_color * self.scene_characteristics.diffuse_coefficient * shade;
             }
         }
 
         result
     }
 
-    fn trace(&mut self, ray: &Ray) -> Option<Color> {
-        match self.closest_intersection(ray, None) {
-            Some(ray_hit) => Some(self.light(ray, &ray_hit)),
+    fn trace(&self, ray: &Ray, reflection_level: u8) -> Option<Color> {
+        match self.intersection(ray, None, true) {
+            Some(ray_hit) => {
+                let mut object_color: Color = self.light(ray, &ray_hit);
+                if reflection_level < self.scene_characteristics.max_reflections &&
+                    ray_hit.shape.material().reflective
+                {
+                    let reflection_ray =
+                        Ray::new(ray_hit.intersection, ray.reflection(ray_hit.normal));
+
+                    if let Some(reflection_color) =
+                        self.trace(&reflection_ray, reflection_level + 1u8)
+                    {
+                        object_color += reflection_color;
+                    }
+                }
+
+                Some(object_color)
+            }
             None => None,
         }
     }
@@ -163,9 +185,9 @@ impl Scene {
     pub fn draw(&mut self) {
         for x in 0..self.view_window.pixel_width {
             for y in 0..self.view_window.pixel_height {
-                let mut ray: Ray = Ray::new(self.camera.origin, self.view_window.at(x, y));
+                let mut ray: Ray = Ray::from_points(self.camera.origin, self.view_window.at(x, y));
 
-                if let Some(color) = self.trace(&ray) {
+                if let Some(color) = self.trace(&ray, 0u8) {
                     self.pixel_buffer.set_pixel(x, y, color);
                 }
             }

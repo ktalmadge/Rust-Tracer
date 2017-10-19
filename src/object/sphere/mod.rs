@@ -2,37 +2,34 @@ extern crate cgmath;
 
 use self::cgmath::*;
 
-use color::Color;
-use object::Object;
+use object::material::Material;
 use std::f64;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Sphere {
     origin: Vector3<f64>,
     radius: f64,
-    pub color: Color,
+    pub material: Material,
 }
 
 impl Sphere {
-    pub fn new(origin: Vector3<f64>, radius: f64, color: Color) -> Sphere {
+    pub fn new(origin: Vector3<f64>, radius: f64, material: Material) -> Sphere {
         Sphere {
             origin,
             radius,
-            color,
+            material,
         }
     }
-}
 
-impl Object for Sphere {
-    fn color(&self) -> Color {
-        self.color
-    }
-
-    fn normal(&self, intersection: Vector3<f64>, incoming_vector: Vector3<f64>) -> Vector3<f64> {
+    pub fn normal(
+        &self,
+        intersection: Vector3<f64>,
+        incoming_vector: Vector3<f64>,
+    ) -> Vector3<f64> {
         (intersection - self.origin).normalize()
     }
 
-    fn intersect(&self, ray: &::ray::Ray) -> Option<Vector3<f64>> {
+    pub fn intersect(&self, ray: &::ray::Ray) -> Option<Vector3<f64>> {
         let diff: Vector3<f64> = ray.origin - self.origin;
         let b: f64 = 2f64 * diff.dot(ray.direction);
         let c: f64 = diff.dot(diff) - self.radius.powi(2);

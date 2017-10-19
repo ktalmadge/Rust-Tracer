@@ -1,13 +1,13 @@
 {
   "width": 800,
   "height": 600,
-  "camera_position": [0.0, 0.0, 10.0],
+  "camera_position": [0.0, 0.0, 30.0],
   "camera_target": [0.0, 0.0, 0.0],
   "viewport_distance": 1.0,
   "viewport_width": 1.0,
   "lights": [
     {
-      "position": [0, 100.0, 50.0],
+      "position": [-5, 10, 2.0],
       "luminosity": 1.0,
       "color": [255, 255, 255]
     }
@@ -15,25 +15,26 @@
   "objects": [
     {
       "filename": "./test/icosahedron.obj",
-      "color": [255, 255, 255]
+      "color": [100, 200, 150],
+      "reflective": false
     },
     {
       "filename": "./test/small_sphere.obj",
-      "color": [0, 100, 0]
+      "color": [0, 100, 200],
+      "reflective": false
     },
     {
       "filename": "./test/large_sphere.obj",
-      "color": [0, 0, 100]
+      "color": [255, 100, 100],
+      "reflective": false
     },
     {
       "filename": "./test/floor.obj",
-      "color": [100, 100, 100]
-    },
-    {
-      "filename": "./test/wall.obj",
-      "color": [100, 100, 100]
+      "color": [150, 150, 150],
+      "reflective": true
     }
   ],
   "ambient_coefficient": 0.2,
-  "specular_coefficient": 20
+  "specular_exponent": 20,
+  "max_reflections": 3
 }

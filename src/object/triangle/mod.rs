@@ -2,36 +2,38 @@ extern crate cgmath;
 
 use self::cgmath::*;
 
-use color::Color;
-use object::Object;
+use object::material::Material;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Triangle {
     p1: Vector3<f64>,
     p2: Vector3<f64>,
     p3: Vector3<f64>,
+    pub material: Material,
     pub normal: Vector3<f64>,
-    pub color: Color,
 }
 
 impl Triangle {
-    pub fn new(p1: Vector3<f64>, p2: Vector3<f64>, p3: Vector3<f64>, color: Color) -> Triangle {
+    pub fn new(
+        p1: Vector3<f64>,
+        p2: Vector3<f64>,
+        p3: Vector3<f64>,
+        material: Material,
+    ) -> Triangle {
         Triangle {
             p1,
             p2,
             p3,
+            material,
             normal: (p2 - p1).cross(p3 - p1).normalize(),
-            color,
         }
     }
-}
 
-impl Object for Triangle {
-    fn color(&self) -> Color {
-        self.color
-    }
-
-    fn normal(&self, intersection: Vector3<f64>, incoming_vector: Vector3<f64>) -> Vector3<f64> {
+    pub fn normal(
+        &self,
+        intersection: Vector3<f64>,
+        incoming_vector: Vector3<f64>,
+    ) -> Vector3<f64> {
         if incoming_vector.dot(self.normal) > 0f64 {
             -self.normal
         } else {
@@ -39,7 +41,7 @@ impl Object for Triangle {
         }
     }
 
-    fn intersect(&self, ray: &::ray::Ray) -> Option<Vector3<f64>> {
+    pub fn intersect(&self, ray: &::ray::Ray) -> Option<Vector3<f64>> {
         let eps: f64 = 0.000_000_000_01;
 
         let v1v2: Vector3<f64> = self.p2 - self.p1;

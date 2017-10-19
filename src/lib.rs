@@ -24,15 +24,4 @@ mod tests {
     use super::*;
 
     use super::cgmath::Vector3;
-
-    #[test]
-    fn test_ray() {
-        let straight_ray: ray::Ray = ray::Ray::new(
-            Vector3::new(0f64, 0f64, 0f64),
-            Vector3::new(0f64, 0f64, -1f64),
-        );
-        let straight_normal: Vector3<f64> = Vector3::new(0f64, 0f64, 1f64);
-
-        assert_eq!(straight_ray.reflection(straight_normal), straight_normal);
-    }
 }

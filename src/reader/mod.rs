@@ -8,7 +8,7 @@ use std::io::{self, BufReader, ErrorKind};
 use std::io::prelude::*;
 use std::fs::File;
 
-use color::Color;
+use object::material::Material;
 
 pub struct Reader {
     vertices: Vec<Vector3<f64>>,
@@ -69,7 +69,7 @@ impl Reader {
         &mut self,
         statement: &str,
         args: Vec<&str>,
-        color: Color,
+        material: Material,
     ) -> Result<(), ::std::io::Error> {
         match statement {
             "v" => {
@@ -94,7 +94,7 @@ impl Reader {
                             self.vertices[parse_face_indices(args[i])?],
                             self.vertices[parse_face_indices(args[i + 1])?],
                             self.vertices[parse_face_indices(args[i + 2])?],
-                            color,
+                            material,
                         ),
                     ))
                 }
@@ -110,7 +110,7 @@ impl Reader {
                     ::object::sphere::Sphere::new(
                         sphere_origin,
                         parse_float(args[3])?,
-                        color,
+                        material,
                     ),
                 ));
             }
@@ -123,7 +123,7 @@ impl Reader {
     fn parse(
         &mut self,
         file_contents: BufReader<File>,
-        color: Color,
+        material: Material,
     ) -> Result<(), ::std::io::Error> {
         // This is a buffer of the "arguments" for each line, it uses raw pointers
         // in order to allow it to be re-used across iterations.
@@ -138,15 +138,15 @@ impl Reader {
                     args.push(t);
                 }
 
-                self.eval(statement, args, color)?
+                self.eval(statement, args, material)?
             }
         }
 
         Ok(())
     }
 
-    pub fn read_file(&mut self, filename: &str, color: Color) -> Result<(), io::Error> {
+    pub fn read_file(&mut self, filename: &str, material: Material) -> Result<(), io::Error> {
         let file_contents = BufReader::new(File::open(filename)?);
-        self.parse(file_contents, color)
+        self.parse(file_contents, material)
     }
 }

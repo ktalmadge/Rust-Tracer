@@ -30,22 +30,34 @@ impl Sphere {
     }
 
     pub fn intersect(&self, ray: &::ray::Ray) -> Option<Vector3<f64>> {
-        let diff: Vector3<f64> = ray.origin - self.origin;
-        let b: f64 = 2f64 * diff.dot(ray.direction);
-        let c: f64 = diff.dot(diff) - self.radius.powi(2);
-        let root = b.powi(2) - 4f64 * c;
+        let diff = self.origin - ray.origin;
 
-        if root < 0f64 {
-            None
-        } else {
-            // w: Distance along ray to intersection
-            let w = ((-b + root.sqrt()) / 2f64).min((-b - root.sqrt()) / 2f64);
+        let tca: f64 = diff.dot(ray.direction);
 
-            Some(Vector3::new(
-                ray.origin.x + ray.direction.x * w,
-                ray.origin.y + ray.direction.y * w,
-                ray.origin.z + ray.direction.z * w,
-            ))
+        if tca.is_sign_negative() {
+            return None;
         }
+
+        let d2: f64 = diff.dot(diff) - tca * tca;
+
+        let radius_squared = self.radius * self.radius;
+
+        if d2 > radius_squared {
+            return None;
+        }
+
+        let thc: f64 = (radius_squared - d2).sqrt();
+
+        let t: f64 = f64::min(tca + thc, tca - thc);
+
+        if t.is_sign_negative() {
+            return None;
+        }
+
+        Some(Vector3::new(
+            ray.origin.x + ray.direction.x * t,
+            ray.origin.y + ray.direction.y * t,
+            ray.origin.z + ray.direction.z * t,
+        ))
     }
 }

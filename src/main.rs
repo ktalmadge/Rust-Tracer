@@ -10,7 +10,6 @@ mod camera;
 mod color;
 mod light;
 mod object;
-mod pixel_buffer;
 mod ray;
 mod reader;
 mod scene;

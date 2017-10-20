@@ -7,17 +7,19 @@ use self::cgmath::*;
 
 use std::f64;
 
-mod view_window;
 mod configuration;
+mod pixel_buffer;
+mod view_window;
 
 use self::configuration::Configuration;
+use self::pixel_buffer::PixelBuffer;
+use self::view_window::ViewWindow;
+
 use light::Light;
 use camera::Camera;
 use color::Color;
 use object::*;
-use pixel_buffer::PixelBuffer;
 use ray::Ray;
-use self::view_window::ViewWindow;
 
 pub struct Scene {
     camera: Camera,
@@ -109,10 +111,12 @@ impl Scene {
                 if shortest_distance > distance {
                     shortest_distance = distance;
 
+                    let normal: Vector3<f64> = shape.normal(intersection, ray.direction);
+
                     result = Some(RayHit {
                         shape,
                         intersection,
-                        normal: shape.normal(intersection, ray.direction),
+                        normal,
                         distance,
                     });
                 }
@@ -134,6 +138,31 @@ impl Scene {
         }
     }
 
+    fn phong(
+        &self,
+        incoming_ray: &Ray,
+        to_light: &Ray,
+        normal: Vector3<f64>,
+        material: material::Material,
+    ) -> Option<Color> {
+        let shade: f64 = to_light.direction.dot(normal);
+
+        if shade > 0f64 {
+            // Specular component
+            let mut result: Color = Color::new(100f64, 100f64, 100f64) *
+                f64::max(
+                    0f64,
+                    to_light.direction.dot(incoming_ray.reflection(normal)),
+                ).powf(self.scene_characteristics.specular_exponent);
+            // Diffuse component
+            result += material.color * self.scene_characteristics.diffuse_coefficient * shade;
+
+            Some(result)
+        } else {
+            None
+        }
+    }
+
     fn light(&self, ray: &Ray, ray_hit: &RayHit) -> Color {
         let shape_color: Color = ray_hit.shape.material().color;
 
@@ -146,13 +175,14 @@ impl Scene {
                 continue;
             }
 
-            let shade: f64 = to_light.direction.dot(ray_hit.normal);
-
-            if shade > 0f64 {
-                result += Color::new(100f64, 100f64, 100f64) *
-                    f64::max(0f64, to_light.direction.dot(ray.reflection(ray_hit.normal)))
-                        .powf(self.scene_characteristics.specular_exponent) +
-                    shape_color * self.scene_characteristics.diffuse_coefficient * shade;
+            if let Some(color) = self.phong(
+                ray,
+                &to_light,
+                ray_hit.normal,
+                ray_hit.shape.material(),
+            )
+            {
+                result += color;
             }
         }
 

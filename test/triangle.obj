@@ -1,0 +1,10 @@
+# triangle.obj
+#
+
+g triangle
+
+v -1 0 9.9
+v -1 12 9.9
+v 5 12 9.9
+
+f 1 2 3

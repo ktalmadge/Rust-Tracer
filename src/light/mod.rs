@@ -7,15 +7,15 @@ use color::Color;
 
 pub struct Light {
     pub origin: Vector3<f64>,
-    pub luminosity: f64,
+    pub intensity: f64,
     pub color: Color,
 }
 
 impl Light {
-    pub fn new(origin: Vector3<f64>, luminosity: f64, color: Color) -> Light {
+    pub fn new(origin: Vector3<f64>, intensity: f64, color: Color) -> Light {
         Light {
             origin,
-            luminosity,
+            intensity,
             color,
         }
     }

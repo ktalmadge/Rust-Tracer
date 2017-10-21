@@ -37,11 +37,13 @@ struct SceneContents {
 struct SceneCharacteristics {
     ambient_coefficient: f64,
     diffuse_coefficient: f64,
+    specular_coefficient: f64,
     specular_exponent: f64,
     max_reflections: u8,
 }
 
 struct RayHit<'a> {
+    ray_direction: Vector3<f64>,
     shape: &'a Shape,
     intersection: Vector3<f64>,
     normal: Vector3<f64>,
@@ -74,7 +76,8 @@ impl Scene {
             scene_contents: SceneContents { lights, shapes },
             scene_characteristics: SceneCharacteristics {
                 ambient_coefficient: configuration.ambient_coefficient,
-                diffuse_coefficient: 1f64 - configuration.ambient_coefficient,
+                diffuse_coefficient: configuration.diffuse_coefficient,
+                specular_coefficient: configuration.specular_coefficient,
                 specular_exponent: configuration.specular_exponent,
                 max_reflections: configuration.max_reflections,
             },
@@ -114,6 +117,7 @@ impl Scene {
                     let normal: Vector3<f64> = shape.normal(intersection, ray.direction);
 
                     result = Some(RayHit {
+                        ray_direction: ray.direction,
                         shape,
                         intersection,
                         normal,
@@ -138,29 +142,22 @@ impl Scene {
         }
     }
 
-    fn phong(
-        &self,
-        incoming_ray: &Ray,
-        to_light: &Ray,
-        normal: Vector3<f64>,
-        material: material::Material,
-    ) -> Option<Color> {
-        let shade: f64 = to_light.direction.dot(normal);
+    fn phong(&self, ray_hit: &RayHit, light: &Light, to_light: &Ray) -> Color {
+        // TODO - Blend specular with material color
 
-        if shade > 0f64 {
-            // Specular component
-            let mut result: Color = Color::new(100f64, 100f64, 100f64) *
-                f64::max(
-                    0f64,
-                    to_light.direction.dot(incoming_ray.reflection(normal)),
-                ).powf(self.scene_characteristics.specular_exponent);
-            // Diffuse component
-            result += material.color * self.scene_characteristics.diffuse_coefficient * shade;
+        // Diffuse component + specular component
+        let reflection: Vector3<f64> = Ray::reflect(ray_hit.ray_direction, ray_hit.normal);
+        let specular_component: Color = light.color * light.intensity *
+            self.scene_characteristics.specular_coefficient *
+            f64::max(0f64, to_light.direction.dot(reflection)).powf(
+                self.scene_characteristics.specular_exponent,
+            );
 
-            Some(result)
-        } else {
-            None
-        }
+        let diffuse_component: Color = ray_hit.shape.material().color * light.intensity *
+            self.scene_characteristics.diffuse_coefficient *
+            f64::max(0f64, ray_hit.normal.dot(to_light.direction));
+
+        diffuse_component + specular_component
     }
 
     fn light(&self, ray: &Ray, ray_hit: &RayHit) -> Color {
@@ -175,15 +172,7 @@ impl Scene {
                 continue;
             }
 
-            if let Some(color) = self.phong(
-                ray,
-                &to_light,
-                ray_hit.normal,
-                ray_hit.shape.material(),
-            )
-            {
-                result += color;
-            }
+            result += self.phong(ray_hit, &light, &to_light);
         }
 
         result
@@ -213,12 +202,23 @@ impl Scene {
     }
 
     pub fn draw(&mut self) {
+        let total_light_intensity: f64 = self.scene_contents.lights.iter().fold(
+            0f64,
+            |sum, ref light| {
+                sum + light.intensity
+            },
+        );
+        println!("Total light intensity: {}", total_light_intensity);
         for x in 0..self.view_window.pixel_width {
             for y in 0..self.view_window.pixel_height {
                 let mut ray: Ray = Ray::from_points(self.camera.origin, self.view_window.at(x, y));
 
                 if let Some(color) = self.trace(&ray, 0u8) {
-                    self.pixel_buffer.set_pixel(x, y, color);
+                    self.pixel_buffer.set_pixel(
+                        x,
+                        y,
+                        color.normalized(total_light_intensity),
+                    );
                 }
             }
         }

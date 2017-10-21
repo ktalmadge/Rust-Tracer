@@ -26,14 +26,18 @@ impl Ray {
         f64::from((other - self.origin).magnitude())
     }
 
+    pub fn reflect(direction: Vector3<f64>, normal: Vector3<f64>) -> Vector3<f64> {
+        direction - 2f64 * normal * direction.dot(normal)
+    }
+
     pub fn reflection(&self, normal: Vector3<f64>) -> Vector3<f64> {
-        self.direction - 2f64 * normal * self.direction.dot(normal)
+        Ray::reflect(self.direction, normal)
     }
 
     pub fn reflection_ray(&self, intersection: Vector3<f64>, normal: Vector3<f64>) -> Ray {
         Ray {
             origin: intersection,
-            direction: self.direction - 2f64 * normal * self.direction.dot(normal),
+            direction: Ray::reflect(self.direction, normal),
         }
     }
 }

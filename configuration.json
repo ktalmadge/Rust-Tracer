@@ -7,13 +7,13 @@
   "viewport_width": 1.0,
   "lights": [
     {
-      "position": [0, 5, -10.0],
-      "luminosity": 1.0,
+      "position": [-7, 5, 0.0],
+      "intensity": 1.0,
       "color": [255, 255, 255]
     },
     {
-      "position": [-7, 15, 0],
-      "luminosity": 1.0,
+      "position": [7, 5, 0.0],
+      "intensity": 1.0,
       "color": [255, 255, 255]
     }
   ],
@@ -40,6 +40,8 @@
     }
   ],
   "ambient_coefficient": 0.2,
-  "specular_exponent": 20,
+  "diffuse_coefficient": 0.6,
+  "specular_coefficient": 0.2,
+  "specular_exponent": 10,
   "max_reflections": 1
 }

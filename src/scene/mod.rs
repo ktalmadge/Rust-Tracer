@@ -208,7 +208,6 @@ impl Scene {
                 sum + light.intensity
             },
         );
-        println!("Total light intensity: {}", total_light_intensity);
         for x in 0..self.view_window.pixel_width {
             for y in 0..self.view_window.pixel_height {
                 let mut ray: Ray = Ray::from_points(self.camera.origin, self.view_window.at(x, y));

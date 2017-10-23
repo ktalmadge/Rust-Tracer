@@ -29,6 +29,8 @@ pub struct Configuration {
     pub diffuse_coefficient: f64,
     pub specular_exponent: f64,
     pub max_reflections: u8,
+    pub reinhard_key_value: f64,
+    pub reinhard_delta: f64,
     pub objects: Vec<ObjectDefinition>,
     pub lights: Vec<LightDefinition>,
 }

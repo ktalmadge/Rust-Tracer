@@ -24,20 +24,30 @@ impl Color {
         )
     }
 
-    pub fn normalized(&self, total_light_intensity: f64) -> Color {
-        Color::new(
-            self.r / total_light_intensity * 255f64,
-            self.g / total_light_intensity * 255f64,
-            self.b / total_light_intensity * 255f64,
+    pub fn to_rgba(&self) -> Rgba<u8> {
+        Rgba::from_channels(
+            (self.r * 255f64) as u8,
+            (self.g * 255f64) as u8,
+            (self.b * 255f64) as u8,
+            255,
         )
     }
 
-    pub fn to_rgba(&self) -> Rgba<u8> {
-        Rgba::from_channels(self.r as u8, self.g as u8, self.b as u8, 255)
+    pub fn to_luminance(&self) -> f64 {
+        // Magic numbers from  https://en.wikipedia.org/wiki/Relative_luminance
+        self.r * 0.2126 + self.g * 0.7152 + self.b * 0.0722
     }
 }
 
 // Operator overloads
+
+impl ops::Add<f64> for Color {
+    type Output = Color;
+
+    fn add(self, factor: f64) -> Color {
+        Color::new(self.r + factor, self.g + factor, self.b + factor)
+    }
+}
 
 impl ops::Add<Color> for Color {
     type Output = Color;
@@ -63,10 +73,26 @@ impl ops::Mul<f64> for Color {
     }
 }
 
-impl ops::MulAssign<f64> for Color {
-    fn mul_assign(&mut self, factor: f64) {
-        self.r *= factor;
-        self.g *= factor;
-        self.b *= factor;
+impl ops::Mul<Color> for Color {
+    type Output = Color;
+
+    fn mul(self, other: Color) -> Color {
+        Color::new(self.r * other.r, self.g * other.g, self.b * other.b)
+    }
+}
+
+impl ops::Div<f64> for Color {
+    type Output = Color;
+
+    fn div(self, factor: f64) -> Color {
+        Color::new(self.r / factor, self.g / factor, self.b / factor)
+    }
+}
+
+impl ops::Div<Color> for Color {
+    type Output = Color;
+
+    fn div(self, other: Color) -> Color {
+        Color::new(self.r / other.r, self.g / other.g, self.b / other.b)
     }
 }

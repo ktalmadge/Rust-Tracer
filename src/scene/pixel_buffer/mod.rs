@@ -27,6 +27,28 @@ impl PixelBuffer {
         self.color_buffer[x][y] = color;
     }
 
+    // e ^ (1/n SUM( ln( luminance[x][y] + delta ) ) )
+    fn log_average_luminance(&self, delta: f64) -> f64 {
+        let mut sum: f64 = 0f64;
+        for x in 0..self.width {
+            for y in 0..self.height {
+                sum += (self.color_buffer[x][y].to_luminance() + delta).ln();
+            }
+        }
+
+        (sum / (self.width * self.height) as f64).exp()
+    }
+
+    pub fn reinhard_tone_correction(&mut self, key_value: f64, delta: f64) {
+        let scale_factor: f64 = key_value / self.log_average_luminance(delta);
+        for x in 0..self.width {
+            for y in 0..self.height {
+                let color: Color = self.color_buffer[x][y] * scale_factor;
+                self.color_buffer[x][y] = color / (color + 1f64);
+            }
+        }
+    }
+
     pub fn save_image(&mut self, filename: &str) -> io::Result<()> {
         for x in 0..self.width {
             for y in 0..self.height {

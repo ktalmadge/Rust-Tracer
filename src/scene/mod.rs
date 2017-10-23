@@ -40,6 +40,8 @@ struct SceneCharacteristics {
     specular_coefficient: f64,
     specular_exponent: f64,
     max_reflections: u8,
+    reinhard_key_value: f64,
+    reinhard_delta: f64,
 }
 
 struct RayHit<'a> {
@@ -80,6 +82,8 @@ impl Scene {
                 specular_coefficient: configuration.specular_coefficient,
                 specular_exponent: configuration.specular_exponent,
                 max_reflections: configuration.max_reflections,
+                reinhard_key_value: configuration.reinhard_key_value,
+                reinhard_delta: configuration.reinhard_delta,
             },
             camera,
             pixel_buffer: PixelBuffer::new(configuration.width, configuration.height),
@@ -202,26 +206,24 @@ impl Scene {
     }
 
     pub fn draw(&mut self) {
-        let total_light_intensity: f64 = self.scene_contents.lights.iter().fold(
-            0f64,
-            |sum, ref light| {
-                sum + light.intensity
-            },
-        );
+        // Ray tracing for each pixel
         for x in 0..self.view_window.pixel_width {
             for y in 0..self.view_window.pixel_height {
                 let mut ray: Ray = Ray::from_points(self.camera.origin, self.view_window.at(x, y));
 
                 if let Some(color) = self.trace(&ray, 0u8) {
-                    self.pixel_buffer.set_pixel(
-                        x,
-                        y,
-                        color.normalized(total_light_intensity),
-                    );
+                    self.pixel_buffer.set_pixel(x, y, color);
                 }
             }
         }
 
+        // Tone correction
+        self.pixel_buffer.reinhard_tone_correction(
+            self.scene_characteristics.reinhard_key_value,
+            self.scene_characteristics.reinhard_delta,
+        );
+
+        // Save image
         self.pixel_buffer.save_image("img/scene.png").unwrap();
     }
 }

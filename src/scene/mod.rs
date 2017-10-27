@@ -7,17 +7,17 @@ use self::cgmath::*;
 
 use std::f64;
 
-mod configuration;
-mod pixel_buffer;
+pub mod configuration;
+mod draw_iterator;
 mod view_window;
 
 use self::configuration::Configuration;
-use self::pixel_buffer::PixelBuffer;
+use self::draw_iterator::DrawIterator;
 use self::view_window::ViewWindow;
 
-use light::Light;
 use camera::Camera;
 use color::Color;
+use light::Light;
 use object::*;
 use ray::Ray;
 
@@ -25,12 +25,12 @@ pub struct Scene {
     camera: Camera,
     scene_contents: SceneContents,
     scene_characteristics: SceneCharacteristics,
-    pixel_buffer: PixelBuffer,
+    color_buffer: Vec<Vec<Color>>,
     view_window: ViewWindow,
 }
 
 struct SceneContents {
-    lights: Vec<Box<Light>>,
+    lights: Vec<Light>,
     shapes: Vec<Shape>,
 }
 
@@ -53,14 +53,11 @@ struct RayHit<'a> {
 }
 
 impl Scene {
-    pub fn new(configuration_filename: String) -> Scene {
-        let mut configuration: Configuration =
-            Configuration::read_configuration(configuration_filename);
-
+    pub fn new(configuration: &Configuration) -> Scene {
         /* Set up lights */
-        let mut lights: Vec<Box<Light>> = Vec::new();
+        let mut lights: Vec<Light> = Vec::new();
         for light_definition in &configuration.lights {
-            lights.push(Box::new(light_definition.as_light()));
+            lights.push(light_definition.as_light());
         }
 
         /*  Set up objects */
@@ -86,7 +83,10 @@ impl Scene {
                 reinhard_delta: configuration.reinhard_delta,
             },
             camera,
-            pixel_buffer: PixelBuffer::new(configuration.width, configuration.height),
+            color_buffer: vec![
+                vec![Color::new(0f64, 0f64, 0f64); configuration.height];
+                configuration.width
+            ],
             view_window: ViewWindow::new(
                 configuration.width,
                 configuration.height,
@@ -205,6 +205,31 @@ impl Scene {
         }
     }
 
+    pub fn get_pixel(&self, x: usize, y: usize) -> Color {
+        self.color_buffer[x][y]
+    }
+
+    pub fn draw_iterator(&self, threads: usize, thread_number: usize) -> DrawIterator {
+        DrawIterator::new(
+            self.view_window.pixel_width,
+            self.view_window.pixel_height,
+            threads,
+            thread_number,
+        )
+    }
+
+    pub fn partial_draw(&mut self, threads: usize, thread_number: usize) {
+        let iterator: DrawIterator = self.draw_iterator(threads, thread_number);
+
+        for (x, y) in iterator {
+            let mut ray: Ray = Ray::from_points(self.camera.origin, self.view_window.at(x, y));
+
+            if let Some(color) = self.trace(&ray, 0u8) {
+                self.color_buffer[x][y] = color;
+            }
+        }
+    }
+
     pub fn draw(&mut self) {
         // Ray tracing for each pixel
         for x in 0..self.view_window.pixel_width {
@@ -212,18 +237,9 @@ impl Scene {
                 let mut ray: Ray = Ray::from_points(self.camera.origin, self.view_window.at(x, y));
 
                 if let Some(color) = self.trace(&ray, 0u8) {
-                    self.pixel_buffer.set_pixel(x, y, color);
+                    self.color_buffer[x][y] = color;
                 }
             }
         }
-
-        // Tone correction
-        self.pixel_buffer.reinhard_tone_correction(
-            self.scene_characteristics.reinhard_key_value,
-            self.scene_characteristics.reinhard_delta,
-        );
-
-        // Save image
-        self.pixel_buffer.save_image("img/scene.png").unwrap();
     }
 }

@@ -1,7 +1,8 @@
 {
-  "width": 3000,
-  "height": 3000,
-  "camera_position": [0.0, 0.0, 10.0],
+  "threads": 4,
+  "width": 1000,
+  "height": 1000,
+  "camera_position": [0.0, 0.0, 15.0],
   "camera_target": [0.0, 0.0, 0.0],
   "viewport_distance": 1.0,
   "viewport_width": 1.0,
@@ -31,19 +32,19 @@
     {
       "filename": "./test/large_sphere.obj",
       "color": [150, 50, 50],
-      "reflective": true
+      "reflective": false
     },
     {
       "filename": "./test/floor.obj",
       "color": [100, 100, 100],
-      "reflective": true
+      "reflective": false
     }
   ],
   "ambient_coefficient": 0.2,
   "diffuse_coefficient": 0.6,
   "specular_coefficient": 0.2,
   "specular_exponent": 20,
-  "max_reflections": 20,
+  "max_reflections": 2,
   "reinhard_key_value": 0.18,
   "reinhard_delta": 0.01
 }

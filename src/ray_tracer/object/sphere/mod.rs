@@ -2,7 +2,8 @@ extern crate cgmath;
 
 use self::cgmath::*;
 
-use object::material::Material;
+use ray_tracer::ray::Ray;
+use super::material::Material;
 use std::f64;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -29,7 +30,7 @@ impl Sphere {
         (intersection - self.origin).normalize()
     }
 
-    pub fn intersect(&self, ray: &::ray::Ray) -> Option<Vector3<f64>> {
+    pub fn intersect(&self, ray: &Ray) -> Option<Vector3<f64>> {
         let diff = self.origin - ray.origin;
 
         let tca: f64 = diff.dot(ray.direction);

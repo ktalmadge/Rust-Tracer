@@ -14,7 +14,7 @@ mod light_definition;
 use self::object_definition::ObjectDefinition;
 use self::light_definition::LightDefinition;
 
-use camera::Camera;
+use ray_tracer::camera::Camera;
 
 #[derive(Serialize, Deserialize)]
 pub struct Configuration {

@@ -1,4 +1,4 @@
-use color::Color;
+use ray_tracer::color::Color;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Material {

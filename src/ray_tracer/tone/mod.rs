@@ -1,4 +1,4 @@
-use color::Color;
+use super::color::Color;
 
 // e ^ (1/n SUM( ln( luminance[x][y] + delta ) ) )
 pub fn log_average_luminance(

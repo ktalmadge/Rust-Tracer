@@ -1,5 +1,3 @@
-#![cfg_attr(feature = "cargo-clippy", allow(borrowed_box))]
-
 extern crate image;
 extern crate cgmath;
 
@@ -15,11 +13,11 @@ use self::configuration::Configuration;
 use self::draw_iterator::DrawIterator;
 use self::view_window::ViewWindow;
 
-use camera::Camera;
-use color::Color;
-use light::Light;
-use object::*;
-use ray::Ray;
+use super::camera::Camera;
+use super::color::Color;
+use super::light::Light;
+use super::object::*;
+use super::ray::Ray;
 
 pub struct Scene {
     camera: Camera,

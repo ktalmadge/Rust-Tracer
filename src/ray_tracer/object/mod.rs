@@ -6,10 +6,14 @@ pub mod material;
 pub mod sphere;
 pub mod triangle;
 
+use ray_tracer::ray::Ray;
+use self::sphere::Sphere;
+use self::triangle::Triangle;
+
 #[derive(Copy, Clone, PartialEq)]
 pub enum Shape {
-    Triangle(triangle::Triangle),
-    Sphere(sphere::Sphere),
+    Triangle(Triangle),
+    Sphere(Sphere),
 }
 
 impl Shape {
@@ -23,7 +27,7 @@ impl Shape {
             Shape::Sphere(sphere) => sphere.normal(intersection, incoming_vector),
         }
     }
-    pub fn intersect(&self, ray: &::ray::Ray) -> Option<Vector3<f64>> {
+    pub fn intersect(&self, ray: &Ray) -> Option<Vector3<f64>> {
         match *self {
             Shape::Triangle(triangle) => triangle.intersect(ray),
             Shape::Sphere(sphere) => sphere.intersect(ray),

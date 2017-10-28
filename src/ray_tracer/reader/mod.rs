@@ -8,12 +8,13 @@ use std::io::{self, BufReader, ErrorKind};
 use std::io::prelude::*;
 use std::fs::File;
 
-use object::material::Material;
+use super::object::material::Material;
+use super::object::Shape;
 
 pub struct Reader {
     vertices: Vec<Vector3<f64>>,
     normals: Vec<Vector3<f64>>,
-    pub shapes: Vec<::object::Shape>,
+    pub shapes: Vec<Shape>,
 }
 
 enum FaceIndex {
@@ -89,8 +90,8 @@ impl Reader {
             "f" => {
                 // There may be more than 3 vertices in a face - make triangles out of them.
                 for i in 0..args.len() - 2 {
-                    self.shapes.push(::object::Shape::Triangle(
-                        ::object::triangle::Triangle::new(
+                    self.shapes.push(Shape::Triangle(
+                        super::object::triangle::Triangle::new(
                             self.vertices[parse_face_indices(args[i])?],
                             self.vertices[parse_face_indices(args[i + 1])?],
                             self.vertices[parse_face_indices(args[i + 2])?],
@@ -106,8 +107,8 @@ impl Reader {
                     parse_float(args[2])?,
                 );
 
-                self.shapes.push(::object::Shape::Sphere(
-                    ::object::sphere::Sphere::new(
+                self.shapes.push(Shape::Sphere(
+                    super::object::sphere::Sphere::new(
                         sphere_origin,
                         parse_float(args[3])?,
                         material,

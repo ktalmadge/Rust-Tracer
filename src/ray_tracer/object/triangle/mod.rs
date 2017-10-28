@@ -2,7 +2,8 @@ extern crate cgmath;
 
 use self::cgmath::*;
 
-use object::material::Material;
+use ray_tracer::ray::Ray;
+use super::material::Material;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Triangle {
@@ -41,7 +42,7 @@ impl Triangle {
         }
     }
 
-    pub fn intersect(&self, ray: &::ray::Ray) -> Option<Vector3<f64>> {
+    pub fn intersect(&self, ray: &Ray) -> Option<Vector3<f64>> {
         let eps: f64 = 0.000_000_000_01;
 
         let v1v2: Vector3<f64> = self.p2 - self.p1;

@@ -3,9 +3,10 @@ extern crate cgmath;
 extern crate serde;
 extern crate serde_json;
 
-use color::Color;
-use object::material::Material;
-use reader::Reader;
+use ray_tracer::color::Color;
+use ray_tracer::object::Shape;
+use ray_tracer::object::material::Material;
+use ray_tracer::reader::Reader;
 
 #[derive(Serialize, Deserialize)]
 pub struct ObjectDefinition {
@@ -15,7 +16,7 @@ pub struct ObjectDefinition {
 }
 
 impl ObjectDefinition {
-    pub fn read_shapes(&self) -> Vec<::object::Shape> {
+    pub fn read_shapes(&self) -> Vec<Shape> {
         let mut r: Reader = Reader::new();
         let material: Material = Material::new(self.parsed_color(), self.reflective);
         r.read_file(&(self.filename), material).unwrap();

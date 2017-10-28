@@ -3,7 +3,7 @@ extern crate image;
 
 use self::cgmath::*;
 
-use color::Color;
+use super::color::Color;
 
 pub struct Light {
     pub origin: Vector3<f64>,

@@ -3,8 +3,8 @@ extern crate cgmath;
 extern crate serde;
 extern crate serde_json;
 
-use color::Color;
-use light::Light;
+use ray_tracer::color::Color;
+use ray_tracer::light::Light;
 
 #[derive(Serialize, Deserialize)]
 pub struct LightDefinition {

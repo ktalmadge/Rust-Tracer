@@ -12,13 +12,22 @@ use ray_tracer::reader::Reader;
 pub struct ObjectDefinition {
     pub filename: String,
     pub color: Vec<u8>,
-    pub reflective: bool,
+    pub reflectance: f64,
+    pub ambient_coefficient: f64,
+    pub specular_coefficient: f64,
+    pub specular_exponent: f64,
 }
 
 impl ObjectDefinition {
     pub fn read_shapes(&self) -> Vec<Shape> {
         let mut r: Reader = Reader::new();
-        let material: Material = Material::new(self.parsed_color(), self.reflective);
+        let material: Material = Material::new(
+            self.parsed_color(),
+            self.reflectance,
+            self.ambient_coefficient,
+            self.specular_coefficient,
+            self.specular_exponent,
+        );
         r.read_file(&(self.filename), material).unwrap();
         r.shapes
     }

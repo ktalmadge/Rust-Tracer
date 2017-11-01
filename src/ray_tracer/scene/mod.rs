@@ -17,6 +17,7 @@ use super::camera::Camera;
 use super::color::Color;
 use super::light::Light;
 use super::object::*;
+use super::object::material::Material;
 use super::ray::Ray;
 
 pub struct Scene {
@@ -33,10 +34,6 @@ struct SceneContents {
 }
 
 struct SceneCharacteristics {
-    ambient_coefficient: f64,
-    diffuse_coefficient: f64,
-    specular_coefficient: f64,
-    specular_exponent: f64,
     max_reflections: u8,
     reinhard_key_value: f64,
     reinhard_delta: f64,
@@ -72,10 +69,6 @@ impl Scene {
         Scene {
             scene_contents: SceneContents { lights, shapes },
             scene_characteristics: SceneCharacteristics {
-                ambient_coefficient: configuration.ambient_coefficient,
-                diffuse_coefficient: configuration.diffuse_coefficient,
-                specular_coefficient: configuration.specular_coefficient,
-                specular_exponent: configuration.specular_exponent,
                 max_reflections: configuration.max_reflections,
                 reinhard_key_value: configuration.reinhard_key_value,
                 reinhard_delta: configuration.reinhard_delta,
@@ -141,37 +134,38 @@ impl Scene {
     }
 
     fn phong(&self, ray_hit: &RayHit, light: &Light, to_light: &Ray) -> Color {
-        // TODO - Blend specular with material color
+        let material: Material = ray_hit.shape.material();
 
         // Diffuse component + specular component
         let reflection: Vector3<f64> = Ray::reflect(ray_hit.ray_direction, ray_hit.normal);
         let specular_component: Color = light.color * light.intensity *
-            self.scene_characteristics.specular_coefficient *
-            f64::max(0f64, to_light.direction.dot(reflection)).powf(
-                self.scene_characteristics.specular_exponent,
-            );
+            material.specular_coefficient *
+            f64::max(0f64, to_light.direction.dot(reflection)).powf(material.specular_exponent);
 
-        let diffuse_component: Color = ray_hit.shape.material().color * light.intensity *
-            self.scene_characteristics.diffuse_coefficient *
+        let diffuse_component: Color = light.color * light.intensity * material.color *
+            material.diffuse_coefficient *
             f64::max(0f64, ray_hit.normal.dot(to_light.direction));
 
         diffuse_component + specular_component
     }
 
     fn light(&self, ray: &Ray, ray_hit: &RayHit) -> Color {
-        let shape_color: Color = ray_hit.shape.material().color;
-
-        let mut result: Color = shape_color * self.scene_characteristics.ambient_coefficient;
+        let material: Material = ray_hit.shape.material();
+        let mut result: Color = Color::new(0f64, 0f64, 0f64);
 
         for light in &self.scene_contents.lights {
+            let ambient_contribution: Color = light.color * light.intensity * material.color *
+                material.ambient_coefficient;
+
             let to_light: Ray = Ray::from_points(ray_hit.intersection, light.origin);
             let light_distance: f64 = (light.origin - ray_hit.intersection).magnitude();
 
             if self.shadow(*ray_hit.shape, &to_light, light_distance) {
+                result += ambient_contribution;
                 continue;
             }
 
-            result += self.phong(ray_hit, light, &to_light);
+            result += ambient_contribution + self.phong(ray_hit, light, &to_light);
         }
 
         result
@@ -180,9 +174,10 @@ impl Scene {
     fn trace(&self, ray: &Ray, reflection_level: u8) -> Option<Color> {
         match self.intersection(ray, None) {
             Some(ray_hit) => {
-                let mut object_color: Color = self.light(ray, &ray_hit);
+                let material: Material = ray_hit.shape.material();
+                let mut object_color: Color = self.light(ray, &ray_hit) * material.normal;
                 if reflection_level < self.scene_characteristics.max_reflections &&
-                    ray_hit.shape.material().reflective
+                    material.reflectance > 0f64
                 {
                     let reflection_ray =
                         Ray::new(ray_hit.intersection, ray.reflection(ray_hit.normal));
@@ -190,7 +185,7 @@ impl Scene {
                     if let Some(reflection_color) =
                         self.trace(&reflection_ray, reflection_level + 1u8)
                     {
-                        object_color += reflection_color;
+                        object_color += reflection_color * material.reflectance;
                     }
                 }
 

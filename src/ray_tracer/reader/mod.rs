@@ -8,6 +8,8 @@ use std::io::{self, BufReader, ErrorKind};
 use std::io::prelude::*;
 use std::fs::File;
 
+use super::object::triangle::Triangle;
+use super::object::sphere::Sphere;
 use super::object::material::Material;
 use super::object::Shape;
 
@@ -90,14 +92,12 @@ impl Reader {
             "f" => {
                 // There may be more than 3 vertices in a face - make triangles out of them.
                 for i in 0..args.len() - 2 {
-                    self.shapes.push(Shape::Triangle(
-                        super::object::triangle::Triangle::new(
-                            self.vertices[parse_face_indices(args[i])?],
-                            self.vertices[parse_face_indices(args[i + 1])?],
-                            self.vertices[parse_face_indices(args[i + 2])?],
-                            material,
-                        ),
-                    ))
+                    self.shapes.push(Shape::Triangle(Triangle::new(
+                        self.vertices[parse_face_indices(args[i])?],
+                        self.vertices[parse_face_indices(args[i + 1])?],
+                        self.vertices[parse_face_indices(args[i + 2])?],
+                        material,
+                    )))
                 }
             }
             "sphere" => {
@@ -108,11 +108,7 @@ impl Reader {
                 );
 
                 self.shapes.push(Shape::Sphere(
-                    super::object::sphere::Sphere::new(
-                        sphere_origin,
-                        parse_float(args[3])?,
-                        material,
-                    ),
+                    Sphere::new(sphere_origin, parse_float(args[3])?, material),
                 ));
             }
             _ => (),

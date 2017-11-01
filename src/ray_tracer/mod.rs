@@ -16,7 +16,7 @@ use std::path::Path;
 
 use image::{ImageBuffer, Rgba};
 
-pub fn save_image(filename: &str, color_buffer: &Vec<Vec<Color>>, width: usize, height: usize) {
+pub fn save_image(filename: &str, color_buffer: &[Vec<Color>], width: usize, height: usize) {
     let mut image_buffer: ImageBuffer<Rgba<u8>, Vec<u8>> =
         ImageBuffer::new(width as u32, height as u32);
 

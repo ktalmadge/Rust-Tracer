@@ -94,13 +94,12 @@ impl Scene {
         }
     }
 
-    // must find closest intersection
-    fn intersection(
-        &self,
-        ray: &Ray,
-        this_object: Option<Shape>,
-        closest_intersection: bool,
-    ) -> Option<RayHit> {
+    pub fn get_pixel(&self, x: usize, y: usize) -> Color {
+        self.color_buffer[x][y]
+    }
+
+    // Find the closest intersection (if any)
+    fn intersection(&self, ray: &Ray, this_object: Option<Shape>) -> Option<RayHit> {
         let mut result: Option<RayHit> = None;
         let mut shortest_distance: f64 = f64::MAX;
 
@@ -126,19 +125,16 @@ impl Scene {
                         distance,
                     });
                 }
-
-                if !closest_intersection {
-                    return result;
-                }
             }
         }
 
         result
     }
 
-    fn shadow(&self, ray_hit: &RayHit, to_light: &Ray) -> bool {
-        if let Some(shadow_hit) = self.intersection(to_light, Some(*ray_hit.shape), false) {
-            true
+    // Check if there is anything between the object and the light
+    fn shadow(&self, object: Shape, to_light: &Ray, light_distance: f64) -> bool {
+        if let Some(shadow_hit) = self.intersection(to_light, Some(object)) {
+            shadow_hit.distance < light_distance
         } else {
             false
         }
@@ -169,19 +165,20 @@ impl Scene {
 
         for light in &self.scene_contents.lights {
             let to_light: Ray = Ray::from_points(ray_hit.intersection, light.origin);
+            let light_distance: f64 = (light.origin - ray_hit.intersection).magnitude();
 
-            if self.shadow(ray_hit, &to_light) {
+            if self.shadow(*ray_hit.shape, &to_light, light_distance) {
                 continue;
             }
 
-            result += self.phong(ray_hit, &light, &to_light);
+            result += self.phong(ray_hit, light, &to_light);
         }
 
         result
     }
 
     fn trace(&self, ray: &Ray, reflection_level: u8) -> Option<Color> {
-        match self.intersection(ray, None, true) {
+        match self.intersection(ray, None) {
             Some(ray_hit) => {
                 let mut object_color: Color = self.light(ray, &ray_hit);
                 if reflection_level < self.scene_characteristics.max_reflections &&
@@ -203,10 +200,9 @@ impl Scene {
         }
     }
 
-    pub fn get_pixel(&self, x: usize, y: usize) -> Color {
-        self.color_buffer[x][y]
-    }
-
+    // Iterator for parallel draws to ensure each thread draws the correct
+    // subset of the image and that the final combination step correctly selects
+    // the image subset for each thread
     pub fn draw_iterator(&self, threads: usize, thread_number: usize) -> DrawIterator {
         DrawIterator::new(
             self.view_window.pixel_width,
@@ -216,6 +212,7 @@ impl Scene {
         )
     }
 
+    // Draw part of the image - used for multi-threaded tracing
     pub fn partial_draw(&mut self, threads: usize, thread_number: usize) {
         let iterator: DrawIterator = self.draw_iterator(threads, thread_number);
 
@@ -228,6 +225,7 @@ impl Scene {
         }
     }
 
+    // Draw the whole image
     pub fn draw(&mut self) {
         // Ray tracing for each pixel
         for x in 0..self.view_window.pixel_width {

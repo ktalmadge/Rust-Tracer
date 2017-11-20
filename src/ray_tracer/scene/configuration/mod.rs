@@ -23,6 +23,7 @@ pub struct Configuration {
     pub height: usize,
     pub camera_position: Vec<f64>,
     pub camera_target: Vec<f64>,
+    pub camera_up: Vec<f64>,
     pub viewport_distance: f64,
     pub viewport_width: f64,
     pub max_reflections: u8,
@@ -53,6 +54,7 @@ impl Configuration {
         Camera::new(
             Configuration::parse_vector(&self.camera_position),
             Configuration::parse_vector(&self.camera_target),
+            Configuration::parse_vector(&self.camera_up),
         )
     }
 }

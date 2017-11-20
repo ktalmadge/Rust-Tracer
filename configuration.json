@@ -1,14 +1,20 @@
 {
   "threads": 4,
-  "width": 1000,
-  "height": 1000,
-  "camera_position": [0.0, 0.0, 6.0],
+  "width": 800,
+  "height": 600,
+  "camera_position": [-10.0, 10.0, 25.0],
   "camera_target": [0.0, 0.0, 0.0],
+  "camera_up": [0.0, 1.0, 0.0],
   "viewport_distance": 1.0,
   "viewport_width": 1.0,
   "lights": [
     {
-      "position": [-50, 30, 20.0],
+      "position": [-30, 30, 20.0],
+      "intensity": 3,
+      "color": [255, 255, 255]
+    },
+    {
+      "position": [20, 30, 20.0],
       "intensity": 5,
       "color": [255, 255, 255]
     }
@@ -16,38 +22,30 @@
   "objects": [
     {
       "filename": "./test/icosahedron.obj",
-      "color": [100, 50, 200],
-      "reflectance": 0,
+      "color": [100, 200, 200],
+      "reflectance": 0.5,
       "ambient_coefficient": 0.3,
       "specular_coefficient": 0.1,
       "specular_exponent": 3
     },
     {
       "filename": "./test/spheres.obj",
-      "color": [200, 50, 50],
-      "reflectance": 0.25,
+      "color": [255, 100, 100],
+      "reflectance": 0.15,
       "ambient_coefficient": 0.2,
-      "specular_coefficient": 0.6,
-      "specular_exponent": 30
+      "specular_coefficient": 0.4,
+      "specular_exponent": 20
     },
     {
-      "filename": "./test/floor.obj",
-      "color": [100, 100, 100],
-      "reflectance": 0.0,
+      "filename": "./test/room/floor.obj",
+      "color": [255, 255, 255],
+      "reflectance": 0.5,
       "ambient_coefficient": 0.4,
       "specular_coefficient": 0.1,
-      "specular_exponent": 10
-    },
-    {
-      "filename": "./test/wall.obj",
-      "color": [100, 100, 100],
-      "reflectance": 0.0,
-      "ambient_coefficient": 0.3,
-      "specular_coefficient": 0.2,
       "specular_exponent": 10
     }
   ],
   "max_reflections": 5,
-  "reinhard_key_value": 0.48,
+  "reinhard_key_value": 0.18,
   "reinhard_delta": 0.01
 }

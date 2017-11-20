@@ -7,11 +7,9 @@ use std::f64;
 
 pub mod configuration;
 mod draw_iterator;
-mod view_window;
 
 use self::configuration::Configuration;
 use self::draw_iterator::DrawIterator;
-use self::view_window::ViewWindow;
 
 use super::camera::Camera;
 use super::color::Color;
@@ -24,8 +22,8 @@ pub struct Scene {
     camera: Camera,
     scene_contents: SceneContents,
     scene_characteristics: SceneCharacteristics,
+    view_characteristics: ViewCharacteristics,
     color_buffer: Vec<Vec<Color>>,
-    view_window: ViewWindow,
 }
 
 struct SceneContents {
@@ -37,6 +35,14 @@ struct SceneCharacteristics {
     max_reflections: u8,
     reinhard_key_value: f64,
     reinhard_delta: f64,
+}
+
+struct ViewCharacteristics {
+    pixel_width: usize,
+    pixel_height: usize,
+    viewport_width: f64,
+    viewport_height: f64,
+    viewport_distance: f64,
 }
 
 struct RayHit<'a> {
@@ -61,10 +67,12 @@ impl Scene {
             shapes.append(&mut (object_definition.read_shapes()));
         }
 
-        /* Set up camera and view window */
+        /* Set up camera */
         let camera: Camera = configuration.camera();
-        let view_window_position: Vector3<f64> = camera.origin +
-            (camera.target - camera.origin).normalize() * configuration.viewport_distance;
+
+        /* Calculate viewport height from aspect ratio */
+        let viewport_height: f64 = (configuration.height as f64 / configuration.width as f64) *
+            configuration.viewport_width;
 
         Scene {
             scene_contents: SceneContents { lights, shapes },
@@ -73,22 +81,43 @@ impl Scene {
                 reinhard_key_value: configuration.reinhard_key_value,
                 reinhard_delta: configuration.reinhard_delta,
             },
+            view_characteristics: ViewCharacteristics {
+                pixel_width: configuration.width,
+                pixel_height: configuration.height,
+                viewport_width: configuration.viewport_width,
+                viewport_height,
+                viewport_distance: configuration.viewport_distance,
+            },
             camera,
             color_buffer: vec![
                 vec![Color::new(0f64, 0f64, 0f64); configuration.height];
                 configuration.width
             ],
-            view_window: ViewWindow::new(
-                configuration.width,
-                configuration.height,
-                configuration.viewport_width,
-                view_window_position,
-            ),
         }
     }
 
     pub fn get_pixel(&self, x: usize, y: usize) -> Color {
         self.color_buffer[x][y]
+    }
+
+    // Generate a ray from the camera through the viewport
+    pub fn generate_ray(&self, x: usize, y: usize) -> Ray {
+        let camera_position: Vector3<f64> = self.camera.origin;
+        let camera_direction: Vector3<f64> = self.camera.direction();
+        let camera_right: Vector3<f64> = camera_direction.cross(self.camera.up).normalize();
+        let camera_up: Vector3<f64> = camera_direction.cross(camera_right).normalize();
+
+        // normalize x and y from -0.5 to 0.5
+        let normalized_x = (x as f64 / self.view_characteristics.pixel_width as f64) - 0.5;
+        let normalized_y = (y as f64 / self.view_characteristics.pixel_height as f64) - 0.5;
+
+        // camera position + x factor + y factor + viewport direction / distance
+        let viewport_intersection: Vector3<f64> = self.camera.origin +
+            normalized_x * camera_right * self.view_characteristics.viewport_width +
+            normalized_y * camera_up * self.view_characteristics.viewport_height +
+            camera_direction * self.view_characteristics.viewport_distance;
+
+        Ray::from_points(self.camera.origin, viewport_intersection)
     }
 
     // Find the closest intersection (if any)
@@ -133,10 +162,10 @@ impl Scene {
         }
     }
 
+    // Phong shading for determining diffuse + specular contribution
     fn phong(&self, ray_hit: &RayHit, light: &Light, to_light: &Ray) -> Color {
         let material: Material = ray_hit.shape.material();
 
-        // Diffuse component + specular component
         let reflection: Vector3<f64> = Ray::reflect(ray_hit.ray_direction, ray_hit.normal);
         let specular_component: Color = light.color * light.intensity *
             material.specular_coefficient *
@@ -149,7 +178,8 @@ impl Scene {
         diffuse_component + specular_component
     }
 
-    fn light(&self, ray: &Ray, ray_hit: &RayHit) -> Color {
+    // Use material characteristics and lighting to determine the color
+    fn shade(&self, ray: &Ray, ray_hit: &RayHit) -> Color {
         let material: Material = ray_hit.shape.material();
         let mut result: Color = Color::new(0f64, 0f64, 0f64);
 
@@ -171,27 +201,31 @@ impl Scene {
         result
     }
 
+    // Follow the ray to determine the color of the pixel
     fn trace(&self, ray: &Ray, reflection_level: u8) -> Option<Color> {
         match self.intersection(ray, None) {
+            None => None,
             Some(ray_hit) => {
                 let material: Material = ray_hit.shape.material();
-                let mut object_color: Color = self.light(ray, &ray_hit) * material.normal;
+                let mut object_color: Color = self.shade(ray, &ray_hit);
                 if reflection_level < self.scene_characteristics.max_reflections &&
                     material.reflectance > 0f64
                 {
+                    // Object is reflective - recursively trace reflection ray
                     let reflection_ray =
                         Ray::new(ray_hit.intersection, ray.reflection(ray_hit.normal));
 
                     if let Some(reflection_color) =
                         self.trace(&reflection_ray, reflection_level + 1u8)
                     {
-                        object_color += reflection_color * material.reflectance;
+                        // Combine reflection color and object color
+                        object_color = object_color * material.normal +
+                            reflection_color * material.reflectance;
                     }
                 }
 
                 Some(object_color)
             }
-            None => None,
         }
     }
 
@@ -200,8 +234,8 @@ impl Scene {
     // the image subset for each thread
     pub fn draw_iterator(&self, threads: usize, thread_number: usize) -> DrawIterator {
         DrawIterator::new(
-            self.view_window.pixel_width,
-            self.view_window.pixel_height,
+            self.view_characteristics.pixel_width,
+            self.view_characteristics.pixel_height,
             threads,
             thread_number,
         )
@@ -212,7 +246,7 @@ impl Scene {
         let iterator: DrawIterator = self.draw_iterator(threads, thread_number);
 
         for (x, y) in iterator {
-            let mut ray: Ray = Ray::from_points(self.camera.origin, self.view_window.at(x, y));
+            let mut ray: Ray = self.generate_ray(x, y);
 
             if let Some(color) = self.trace(&ray, 0u8) {
                 self.color_buffer[x][y] = color;
@@ -223,9 +257,9 @@ impl Scene {
     // Draw the whole image
     pub fn draw(&mut self) {
         // Ray tracing for each pixel
-        for x in 0..self.view_window.pixel_width {
-            for y in 0..self.view_window.pixel_height {
-                let mut ray: Ray = Ray::from_points(self.camera.origin, self.view_window.at(x, y));
+        for x in 0..self.view_characteristics.pixel_width {
+            for y in 0..self.view_characteristics.pixel_height {
+                let mut ray: Ray = self.generate_ray(x, y);
 
                 if let Some(color) = self.trace(&ray, 0u8) {
                     self.color_buffer[x][y] = color;

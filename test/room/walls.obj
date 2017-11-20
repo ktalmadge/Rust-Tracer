@@ -1,0 +1,46 @@
+# wall.obj
+#
+
+g back wall
+
+v -50 -5 -25    # 1 Bottom left
+v -50 55 -25   # 2 Top left
+v 50 55 -25    # 3 Top right
+v 50 -5 -25     # 4 Bottom right
+
+g left wall
+
+v -50 -5 60     # 5 Bottom left
+v -50 55 60    # 6 Top left
+v -50 55 -25   # 7 Top right
+v -50 -5 -25    # 8 Bottom right
+
+g right wall
+
+v 50 -5 -25     # 9  Bottom left
+v 50 55 -25    # 10 Top left
+v 50 55 60     # 11 Top right
+v 50 -5 60      # 12 Bottom right
+
+g front wall
+
+v 50 -5 60    # 13 Bottom left
+v 50 55 60   # 14 Top left
+v -50 55 60  # 15 Top right
+v -50 -5 60   # 16 Bottom right
+
+# Back wall
+f 1 2 3
+f 3 4 1
+
+# Left wall
+f 5 6 7
+f 7 8 5
+
+# Right wall
+f 9 10 11
+f 11 12 9
+
+# Front wall
+f 13 14 15
+f 15 16 13

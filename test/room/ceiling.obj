@@ -1,0 +1,12 @@
+# ceiling.obj
+#
+
+g ceiling
+
+v -50.0 55 -25.0    # Front left
+v -50.0 55 60.0     # Back left
+v 50.0 55 60.0      # Back right
+v 50.0 55 -25.0     # Front right
+
+f 3 2 1
+f 1 4 3

@@ -1,0 +1,12 @@
+# floor.obj
+#
+
+g floor
+
+v -50.0 -5 60.0    # Front left
+v -50.0 -5 -25.0   # Back left
+v 50.0 -5 -25.0    # Back right
+v 50.0 -5 60.0     # Front right
+
+f 3 2 1
+f 1 4 3

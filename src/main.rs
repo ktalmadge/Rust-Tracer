@@ -3,6 +3,7 @@
 
 extern crate cgmath;
 extern crate image;
+extern crate rand;
 
 #[macro_use]
 extern crate serde_derive;

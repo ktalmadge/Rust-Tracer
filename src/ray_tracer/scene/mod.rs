@@ -1,9 +1,11 @@
-extern crate image;
 extern crate cgmath;
+extern crate image;
+extern crate rand;
 
 use self::cgmath::*;
 
 use std::f64;
+use rand::Rng;
 
 pub mod configuration;
 mod draw_iterator;
@@ -32,6 +34,7 @@ struct SceneContents {
 }
 
 struct SceneCharacteristics {
+    samples: usize,
     max_reflections: u8,
     reinhard_key_value: f64,
     reinhard_delta: f64,
@@ -42,6 +45,10 @@ struct ViewCharacteristics {
     pixel_height: usize,
     viewport_width: f64,
     viewport_height: f64,
+    width_tolerance: f64,
+    half_width_tolerance: f64,
+    height_tolerance: f64,
+    half_height_tolerance: f64,
     viewport_distance: f64,
 }
 
@@ -74,9 +81,14 @@ impl Scene {
         let viewport_height: f64 = (configuration.height as f64 / configuration.width as f64) *
             configuration.viewport_width;
 
+        /* Normalized pixel tolerance - for supersampling */
+        let width_tolerance: f64 = 1f64 / configuration.width as f64;
+        let height_tolerance: f64 = 1f64 / configuration.height as f64;
+
         Scene {
             scene_contents: SceneContents { lights, shapes },
             scene_characteristics: SceneCharacteristics {
+                samples: configuration.samples,
                 max_reflections: configuration.max_reflections,
                 reinhard_key_value: configuration.reinhard_key_value,
                 reinhard_delta: configuration.reinhard_delta,
@@ -86,6 +98,10 @@ impl Scene {
                 pixel_height: configuration.height,
                 viewport_width: configuration.viewport_width,
                 viewport_height,
+                width_tolerance,
+                half_width_tolerance: width_tolerance / 2f64,
+                height_tolerance,
+                half_height_tolerance: height_tolerance / 2f64,
                 viewport_distance: configuration.viewport_distance,
             },
             camera,
@@ -101,15 +117,23 @@ impl Scene {
     }
 
     // Generate a ray from the camera through the viewport
-    pub fn generate_ray(&self, x: usize, y: usize) -> Ray {
+    pub fn generate_ray(&self, x: usize, y: usize, randomize: bool) -> Ray {
         let camera_position: Vector3<f64> = self.camera.origin;
         let camera_direction: Vector3<f64> = self.camera.direction();
         let camera_right: Vector3<f64> = camera_direction.cross(self.camera.up).normalize();
         let camera_up: Vector3<f64> = camera_direction.cross(camera_right).normalize();
 
         // normalize x and y from -0.5 to 0.5
-        let normalized_x = (x as f64 / self.view_characteristics.pixel_width as f64) - 0.5;
-        let normalized_y = (y as f64 / self.view_characteristics.pixel_height as f64) - 0.5;
+        let mut normalized_x = (x as f64 / self.view_characteristics.pixel_width as f64) - 0.5;
+        let mut normalized_y = (y as f64 / self.view_characteristics.pixel_height as f64) - 0.5;
+
+        if randomize {
+            let mut rng = rand::thread_rng();
+            normalized_x += rng.gen::<f64>() * self.view_characteristics.width_tolerance -
+                self.view_characteristics.half_width_tolerance;
+            normalized_y += rng.gen::<f64>() * self.view_characteristics.height_tolerance -
+                self.view_characteristics.half_height_tolerance;
+        }
 
         // camera position + x factor + y factor + viewport direction / distance
         let viewport_intersection: Vector3<f64> = self.camera.origin +
@@ -229,6 +253,22 @@ impl Scene {
         }
     }
 
+    // Sample the given pixel by tracing one or more rays through it
+    pub fn sample(&mut self, x: usize, y: usize) -> Color {
+        let mut final_color: Color = Color::new(0f64, 0f64, 0f64);
+
+        for s in 0..self.scene_characteristics.samples {
+            let super_sample: bool = s > 0;
+            let mut ray: Ray = self.generate_ray(x, y, super_sample);
+
+            if let Some(color) = self.trace(&ray, 0u8) {
+                final_color += color;
+            }
+        }
+
+        final_color / self.scene_characteristics.samples as f64
+    }
+
     // Iterator for parallel draws to ensure each thread draws the correct
     // subset of the image and that the final combination step correctly selects
     // the image subset for each thread
@@ -246,11 +286,7 @@ impl Scene {
         let iterator: DrawIterator = self.draw_iterator(threads, thread_number);
 
         for (x, y) in iterator {
-            let mut ray: Ray = self.generate_ray(x, y);
-
-            if let Some(color) = self.trace(&ray, 0u8) {
-                self.color_buffer[x][y] = color;
-            }
+            self.color_buffer[x][y] = self.sample(x, y);
         }
     }
 
@@ -259,11 +295,7 @@ impl Scene {
         // Ray tracing for each pixel
         for x in 0..self.view_characteristics.pixel_width {
             for y in 0..self.view_characteristics.pixel_height {
-                let mut ray: Ray = self.generate_ray(x, y);
-
-                if let Some(color) = self.trace(&ray, 0u8) {
-                    self.color_buffer[x][y] = color;
-                }
+                self.color_buffer[x][y] = self.sample(x, y);
             }
         }
     }

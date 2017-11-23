@@ -19,6 +19,7 @@ use ray_tracer::camera::Camera;
 #[derive(Serialize, Deserialize)]
 pub struct Configuration {
     pub threads: usize,
+    pub samples: usize,
     pub width: usize,
     pub height: usize,
     pub camera_position: Vec<f64>,

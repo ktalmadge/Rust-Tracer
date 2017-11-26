@@ -49,7 +49,6 @@ fn parse_index(i: &str) -> Result<usize, ::std::io::Error> {
 
 fn parse_face_indices(f: &str) -> Result<usize, ::std::io::Error> {
     if let Some(index) = f.split("//").next() {
-        // TODO: Normals
         parse_index(index)
     } else {
         Err(::std::io::Error::new(
@@ -80,24 +79,48 @@ impl Reader {
                     parse_float(args[0])?,
                     parse_float(args[1])?,
                     parse_float(args[2])?,
-                ))
+                ));
+
+                Ok(())
             }
             "vn" => {
                 self.normals.push(Vector3::new(
                     parse_float(args[0])?,
                     parse_float(args[1])?,
                     parse_float(args[2])?,
-                ))
+                ));
+
+                Ok(())
             }
             "f" => {
-                // There may be more than 3 vertices in a face - make triangles out of them.
-                for i in 0..args.len() - 2 {
+                if args.len() > 4 {
+                    Err(::std::io::Error::new(
+                        ErrorKind::Other,
+                        format!(
+                            "Face has too many vertices: {} {:?}",
+                            statement,
+                            args
+                        ),
+                    ))
+                } else {
                     self.shapes.push(Shape::Triangle(Triangle::new(
-                        self.vertices[parse_face_indices(args[i])?],
-                        self.vertices[parse_face_indices(args[i + 1])?],
-                        self.vertices[parse_face_indices(args[i + 2])?],
+                        self.vertices[parse_face_indices(args[0])?],
+                        self.vertices[parse_face_indices(args[1])?],
+                        self.vertices[parse_face_indices(args[2])?],
                         material,
-                    )))
+                    )));
+
+                    if args.len() == 4 {
+                        // Object is a rectangle - Make two triangles
+                        self.shapes.push(Shape::Triangle(Triangle::new(
+                            self.vertices[parse_face_indices(args[2])?],
+                            self.vertices[parse_face_indices(args[3])?],
+                            self.vertices[parse_face_indices(args[0])?],
+                            material,
+                        )));
+                    }
+
+                    Ok(())
                 }
             }
             "sphere" => {
@@ -110,11 +133,18 @@ impl Reader {
                 self.shapes.push(Shape::Sphere(
                     Sphere::new(sphere_origin, parse_float(args[3])?, material),
                 ));
-            }
-            _ => (),
-        }
 
-        Ok(())
+                Ok(())
+            }
+            _ => Ok(()),
+            /*  Error handling for unknown statements
+
+                _ => Err(::std::io::Error::new(
+                    ErrorKind::Other,
+                    format!("Unknown statement specification: {}", statement),
+                )),
+            */
+        }
     }
 
     fn parse(
@@ -122,8 +152,6 @@ impl Reader {
         file_contents: BufReader<File>,
         material: Material,
     ) -> Result<(), ::std::io::Error> {
-        // This is a buffer of the "arguments" for each line, it uses raw pointers
-        // in order to allow it to be re-used across iterations.
         for line in file_contents.lines() {
             let line = line?;
             let mut tokens = line.split_whitespace();
@@ -135,7 +163,10 @@ impl Reader {
                     args.push(t);
                 }
 
-                self.eval(statement, args, material)?
+                match self.eval(statement, args, material) {
+                    Err(error) => panic!("{}", error),
+                    Ok(_) => (),
+                }
             }
         }
 

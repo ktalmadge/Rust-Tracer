@@ -1,0 +1,11 @@
+# square.obj
+#
+
+g square
+
+v -5.0 -5 0    # Front left
+v -5.0 5 0     # Back left
+v 5.0 5 0      # Back right
+v 5.0 -5 0     # Front right
+
+f 1 2 3 4

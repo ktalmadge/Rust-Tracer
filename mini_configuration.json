@@ -1,11 +1,10 @@
 {
-  "threads": 4,
+  "threads": 1,
   "samples": 1,
   "use_kd_tree": true,
-  "max_kd_tree_depth": 30,
-  "width": 600,
-  "height": 600,
-  "camera_position": [1, 1, 20.0],
+  "width": 150,
+  "height": 150,
+  "camera_position": [-100, -100, 200.0],
   "camera_target": [0.0, 0.0, 0.0],
   "camera_up": [0.0, 1.0, 0.0],
   "viewport_distance": 1.0,
@@ -24,7 +23,7 @@
   ],
   "objects": [
     {
-      "filename": "./test/cow.obj",
+      "filename": "./test/MINI.obj",
       "color": [200, 100, 100],
       "reflectance": 0.0,
       "ambient_coefficient": 0.2,
@@ -32,7 +31,7 @@
       "specular_exponent": 20
     },
     {
-      "filename": "./test/room/floor.obj",
+      "filename": "./test/room/mini_floor.obj",
       "color": [100, 100, 100],
       "reflectance": 0.0,
       "ambient_coefficient": 0.2,
@@ -41,6 +40,6 @@
     }
   ],
   "max_reflections": 5,
-  "reinhard_key_value": 0.1,
+  "reinhard_key_value": 0.48,
   "reinhard_delta": 0.01
 }

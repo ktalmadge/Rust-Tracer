@@ -20,6 +20,8 @@ use ray_tracer::camera::Camera;
 pub struct Configuration {
     pub threads: usize,
     pub samples: usize,
+    pub use_kd_tree: bool,
+    pub max_kd_tree_depth: usize,
     pub width: usize,
     pub height: usize,
     pub camera_position: Vec<f64>,

@@ -6,19 +6,26 @@ use self::cgmath::*;
 pub struct Ray {
     pub origin: Vector3<f64>,
     pub direction: Vector3<f64>,
+    pub inv_dir: Vector3<f64>,
 }
 
 impl Ray {
     // Generate a normalized ray from origin to destination
     pub fn new(origin: Vector3<f64>, direction: Vector3<f64>) -> Ray {
-        Ray { origin, direction }
+        Ray {
+            origin,
+            direction,
+            inv_dir: 1f64 / direction,
+        }
     }
 
     // Generate a normalized ray from origin to destination
     pub fn from_points(origin: Vector3<f64>, destination: Vector3<f64>) -> Ray {
+        let direction: Vector3<f64> = (destination - origin).normalize();
         Ray {
             origin,
-            direction: (destination - origin).normalize(),
+            direction,
+            inv_dir: 1f64 / direction,
         }
     }
 
@@ -35,9 +42,11 @@ impl Ray {
     }
 
     pub fn reflection_ray(&self, intersection: Vector3<f64>, normal: Vector3<f64>) -> Ray {
+        let direction: Vector3<f64> = Ray::reflect(self.direction, normal);
         Ray {
             origin: intersection,
-            direction: Ray::reflect(self.direction, normal),
+            direction,
+            inv_dir: 1f64 / direction,
         }
     }
 }

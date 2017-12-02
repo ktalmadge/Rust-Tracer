@@ -61,4 +61,24 @@ impl Sphere {
             ray.origin.z + ray.direction.z * t,
         ))
     }
+
+    pub fn min_extent(&self) -> Vector3<f64> {
+        Vector3::new(
+            self.origin[0] - self.radius,
+            self.origin[1] - self.radius,
+            self.origin[2] - self.radius,
+        )
+    }
+
+    pub fn max_extent(&self) -> Vector3<f64> {
+        Vector3::new(
+            self.origin[0] + self.radius,
+            self.origin[1] + self.radius,
+            self.origin[2] + self.radius,
+        )
+    }
+
+    pub fn midpoint(&self) -> Vector3<f64> {
+        self.origin
+    }
 }

@@ -84,4 +84,24 @@ impl Triangle {
 
         None
     }
+
+    pub fn min_extent(&self) -> Vector3<f64> {
+        Vector3::new(
+            self.p1[0].min(self.p2[0].min(self.p3[0])),
+            self.p1[1].min(self.p2[1].min(self.p3[1])),
+            self.p1[2].min(self.p2[2].min(self.p3[2])),
+        )
+    }
+
+    pub fn max_extent(&self) -> Vector3<f64> {
+        Vector3::new(
+            self.p1[0].max(self.p2[0].max(self.p3[0])),
+            self.p1[1].max(self.p2[1].max(self.p3[1])),
+            self.p1[2].max(self.p2[2].max(self.p3[2])),
+        )
+    }
+
+    pub fn midpoint(&self) -> Vector3<f64> {
+        (self.p1 + self.p2 + self.p3) / 3f64
+    }
 }

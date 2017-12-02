@@ -27,16 +27,39 @@ impl Shape {
             Shape::Sphere(sphere) => sphere.normal(intersection, incoming_vector),
         }
     }
+
     pub fn intersect(&self, ray: &Ray) -> Option<Vector3<f64>> {
         match *self {
             Shape::Triangle(triangle) => triangle.intersect(ray),
             Shape::Sphere(sphere) => sphere.intersect(ray),
         }
     }
+
     pub fn material(&self) -> material::Material {
         match *self {
             Shape::Triangle(triangle) => triangle.material,
             Shape::Sphere(sphere) => sphere.material,
+        }
+    }
+
+    pub fn min_extent(&self) -> Vector3<f64> {
+        match *self {
+            Shape::Triangle(triangle) => triangle.min_extent(),
+            Shape::Sphere(sphere) => sphere.min_extent(),
+        }
+    }
+
+    pub fn max_extent(&self) -> Vector3<f64> {
+        match *self {
+            Shape::Triangle(triangle) => triangle.max_extent(),
+            Shape::Sphere(sphere) => sphere.max_extent(),
+        }
+    }
+
+    pub fn midpoint(&self) -> Vector3<f64> {
+        match *self {
+            Shape::Triangle(triangle) => triangle.midpoint(),
+            Shape::Sphere(sphere) => sphere.midpoint(),
         }
     }
 }

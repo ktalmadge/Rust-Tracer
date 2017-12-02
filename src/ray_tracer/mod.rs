@@ -1,5 +1,7 @@
 mod camera;
 mod color;
+mod intersection;
+mod kd_tree;
 mod light;
 mod object;
 mod ray;

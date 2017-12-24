@@ -163,9 +163,8 @@ impl Reader {
                     args.push(t);
                 }
 
-                match self.eval(statement, args, material) {
-                    Err(error) => panic!("{}", error),
-                    Ok(_) => (),
+                if let Err(error) = self.eval(statement, args, material) {
+                    panic!("{}", error)
                 }
             }
         }

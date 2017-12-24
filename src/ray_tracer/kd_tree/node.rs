@@ -12,7 +12,7 @@ pub struct Node {
 
 impl Node {
     // Determine the average midpoint on the given axis
-    pub fn midpoint(objects: &Vec<Shape>, split_axis: usize) -> f64 {
+    pub fn midpoint(objects: &[Shape], split_axis: usize) -> f64 {
         objects.iter().fold(0f64, |midpoint, &object| {
             midpoint + object.midpoint()[split_axis]
         }) / objects.len() as f64
@@ -20,11 +20,7 @@ impl Node {
 
     // Determine which objects are on either side of the split
     // Some objects may be on both sides
-    pub fn split(
-        objects: &Vec<Shape>,
-        midpoint: f64,
-        split_axis: usize,
-    ) -> (Vec<Shape>, Vec<Shape>) {
+    pub fn split(objects: &[Shape], midpoint: f64, split_axis: usize) -> (Vec<Shape>, Vec<Shape>) {
         let mut lt_objects: Vec<Shape> = Vec::new();
         let mut gt_objects: Vec<Shape> = Vec::new();
 

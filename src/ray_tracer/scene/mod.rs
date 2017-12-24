@@ -6,6 +6,7 @@ use self::cgmath::*;
 
 use std::f64;
 use rand::Rng;
+use std::sync::Arc;
 
 pub mod configuration;
 mod draw_iterator;
@@ -32,8 +33,7 @@ pub struct Scene {
 
 struct SceneContents {
     lights: Vec<Light>,
-    shapes: Vec<Shape>,
-    kd_tree: KdTree,
+    kd_tree: Arc<KdTree>,
 }
 
 struct SceneCharacteristics {
@@ -57,20 +57,12 @@ struct ViewCharacteristics {
 }
 
 impl Scene {
-    pub fn new(configuration: &Configuration) -> Scene {
+    pub fn new(configuration: &Configuration, kd_tree: Arc<KdTree>) -> Scene {
         /* Set up lights */
         let mut lights: Vec<Light> = Vec::new();
         for light_definition in &configuration.lights {
             lights.push(light_definition.as_light());
         }
-
-        /*  Set up objects */
-        let mut shapes: Vec<Shape> = Vec::new();
-        for object_definition in &configuration.objects {
-            shapes.append(&mut (object_definition.read_shapes()));
-        }
-
-        let kd_tree: KdTree = KdTree::new(&shapes, configuration.max_kd_tree_depth);
 
         /* Set up camera */
         let camera: Camera = configuration.camera();
@@ -84,11 +76,7 @@ impl Scene {
         let height_tolerance: f64 = 1f64 / configuration.height as f64;
 
         Scene {
-            scene_contents: SceneContents {
-                lights,
-                shapes,
-                kd_tree,
-            },
+            scene_contents: SceneContents { lights, kd_tree },
             scene_characteristics: SceneCharacteristics {
                 samples: configuration.samples,
                 max_reflections: configuration.max_reflections,
@@ -153,7 +141,7 @@ impl Scene {
             return self.scene_contents.kd_tree.intersect(ray);
         }
 
-        Intersection::closest_intersection(ray, &self.scene_contents.shapes)
+        Intersection::closest_intersection(ray, &self.scene_contents.kd_tree.root_node().objects)
     }
 
     // Check if there is anything between the object and the light

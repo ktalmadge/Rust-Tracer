@@ -17,7 +17,7 @@ pub struct Intersection {
 
 impl Intersection {
     // Find the closest intersection from the ray's origin to an object
-    pub fn closest_intersection(ray: &Ray, objects: &Vec<Shape>) -> Option<Intersection> {
+    pub fn closest_intersection(ray: &Ray, objects: &[Shape]) -> Option<Intersection> {
         let mut result: Option<Intersection> = None;
         let mut shortest_distance: f64 = f64::MAX;
         for shape in objects {

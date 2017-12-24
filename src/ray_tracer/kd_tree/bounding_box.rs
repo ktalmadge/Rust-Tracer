@@ -12,6 +12,20 @@ pub struct BoundingBox {
 }
 
 impl BoundingBox {
+    pub fn largest_axis(&self) -> usize {
+        let x_size: f64 = self.max[0] - self.min[0];
+        let y_size: f64 = self.max[1] - self.min[1];
+        let z_size: f64 = self.max[2] - self.min[2];
+
+        if x_size > y_size {
+            if x_size > z_size { 0 } else { 2 }
+        } else if y_size > z_size {
+            1
+        } else {
+            2
+        }
+    }
+
     // Intersection without point
     pub fn intersect_test(&self, ray: &Ray) -> bool {
         let mut tmin: f64 = f64::MIN;

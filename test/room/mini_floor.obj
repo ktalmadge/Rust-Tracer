@@ -1,7 +1,7 @@
-v -150 -150 -25    # 1 Bottom left
-v -150 150 -25   # 2 Top left
-v 150 150 -25    # 3 Top right
-v 150 -150 -25     # 4 Bottom right
+v -15000 -15000 0    # 1 Bottom left
+v -15000 15000 0   # 2 Top left
+v 15000 15000 0    # 3 Top right
+v 15000 -15000 0     # 4 Bottom right
 
 f 1 2 3
 f 3 4 1

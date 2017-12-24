@@ -21,7 +21,7 @@ pub struct KdTree {
 }
 
 impl KdTree {
-    fn scene_bounding_box(objects: &Vec<Shape>) -> BoundingBox {
+    fn scene_bounding_box(objects: &[Shape]) -> BoundingBox {
         let mut min: Vector3<f64> = Vector3::new(f64::MAX, f64::MAX, f64::MAX);
         let mut max: Vector3<f64> = Vector3::new(f64::MIN, f64::MIN, f64::MIN);
 
@@ -89,7 +89,8 @@ impl KdTree {
                 depth + 1,
             )
         } else {
-            let next_split_axis: usize = (split_axis + 1) % 3;
+            // Split on longest axis
+            let next_split_axis: usize = bounding_box.largest_axis();
 
             let mut lt_max: Vector3<f64> = bounding_box.max;
             lt_max[split_axis] = midpoint;
@@ -117,7 +118,7 @@ impl KdTree {
 
             self.add_node(
                 bounding_box,
-                objects,
+                Vec::new(), // No need to save objects in non-leaf node
                 split_axis,
                 Some(lt_node_id),
                 Some(gt_node_id),
@@ -208,7 +209,7 @@ impl KdTree {
         self.traverse(ray, root_node)
     }
 
-    pub fn new(objects: &Vec<Shape>, max_depth: usize) -> KdTree {
+    pub fn new(objects: &[Shape], max_depth: usize) -> KdTree {
         // Copy objects - do not take ownership
         let mut objects = objects.to_vec();
 

@@ -11,10 +11,13 @@ mod tone;
 
 use self::color::Color;
 use self::scene::configuration::Configuration;
+use self::kd_tree::KdTree;
+use self::object::*;
 use self::scene::Scene;
 
 use std::thread;
 use std::path::Path;
+use std::sync::Arc;
 
 use image::{ImageBuffer, Rgba};
 
@@ -51,8 +54,18 @@ pub fn draw(config_file: &str, out_file: &str) {
     let height: usize = configuration.height;
 
     let mut thread_handles: Vec<thread::JoinHandle<_>> = Vec::with_capacity(threads);
+
+    /*  Initialize KD tree */
+    let mut shapes: Vec<Shape> = Vec::new();
+    for object_definition in &configuration.objects {
+        shapes.append(&mut (object_definition.read_shapes()));
+    }
+
+    let kd_tree: KdTree = KdTree::new(&shapes, configuration.max_kd_tree_depth);
+    let arc_tree: Arc<KdTree> = Arc::new(kd_tree);
+
     for i in 0..threads {
-        let mut scene: Scene = Scene::new(&configuration);
+        let mut scene: Scene = Scene::new(&configuration, Arc::clone(&arc_tree));
 
         thread_handles.push(thread::spawn(move || {
             scene.partial_draw(threads, i);
